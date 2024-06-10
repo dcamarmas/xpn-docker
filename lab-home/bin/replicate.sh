@@ -1,6 +1,5 @@
 #!/bin/bash
-set -x
-
+#set -x
 
 #
 if [ $# -lt 1 ]; then
@@ -16,6 +15,7 @@ REPLICATE_DIR=$(dirname $2)
 LIST=$(cat ${MACHINE_FILE})
 for L in $LIST; do
     ssh $L mkdir -p  ${REPLICATE_DIR}
-    scp ${REPLICATE_FILE}  $L:${REPLICATE_FILE}
+    # scp ${REPLICATE_FILE}  $L:${REPLICATE_FILE}
+    rsync  -av --keep-dirlinks  ${REPLICATE_FILE}  $L:${REPLICATE_DIR}
 done
 

@@ -4,7 +4,7 @@ FROM ubuntu:${UBUNTU_VERSION} AS base
 ARG UID
 ARG GID
 
-ENV DEBIAN_FRONTEND=noninteractive 
+ENV DEBIAN_FRONTEND=noninteractive
 
 
 # A) Install essential software
@@ -31,14 +31,18 @@ COPY scripts/pkg-install/*.sh /tmp/
 COPY scripts/src-install/*.sh /tmp/
  RUN  chmod a+x /tmp/*.sh
  RUN  /tmp/mpich.sh   /home/lab/src/
+ RUN  /tmp/spark.sh   /home/lab/src/
  RUN  /tmp/xpn.sh     /home/lab/src/
  RUN  /tmp/ior.sh     /home/lab/src/
 
 # User initial home
-RUN mkdir -p  /home/lab/bin;  mkdir -p /home/lab/data
-ADD lab-home/bin   /home/lab/bin
-ADD lab-home/data  /home/lab/data
-RUN chmod a+x /home/lab/bin/*.sh /home/lab/data/*.sh
+RUN mkdir -p  /home/lab/bin  /home/lab/test  /home/lab/replication  /home/lab/spark  /home/lab/benchmark
+ADD lab-home/bin          /home/lab/bin
+ADD lab-home/test         /home/lab/test
+ADD lab-home/spark        /home/lab/spark
+ADD lab-home/benchmark    /home/lab/benchmark
+ADD lab-home/replication  /home/lab/replication
+RUN chmod a+x /home/lab/*/*.sh
 RUN chown -R lab:lab /home/lab
 WORKDIR "/home/lab"
 
@@ -50,3 +54,4 @@ RUN  rm -fr /tmp/*.sh
 
 EXPOSE 22
 CMD ["/srv/dockerstart.sh"]
+

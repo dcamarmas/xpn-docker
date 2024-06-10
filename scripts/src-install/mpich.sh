@@ -22,10 +22,10 @@ mkdir -p /home/lab/bin
 
 cd ${DESTINATION_PATH}/mpich
 ./configure --prefix=/home/lab/bin/mpich \
-	        --with-device=ch3:sock \
+            --with-device=ch3:sock \
             --enable-threads=multiple \
             --enable-romio \
-	        --disable-fortran
+            --disable-fortran
 
 make -j $(nproc) all
 make install

@@ -13,9 +13,9 @@ pip install py4j
 
 # 3) Download and install Spark
 mkdir -p ${DESTINATION_PATH}
-wget https://dlcdn.apache.org/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz -O ${DESTINATION_PATH}/spark-3.5.tar.gz
+wget https://dlcdn.apache.org/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz -O ${DESTINATION_PATH}/spark-3.5.tar.gz
 tar zxf ${DESTINATION_PATH}/spark-3.5.tar.gz     -C ${DESTINATION_PATH}
-ln -s   ${DESTINATION_PATH}/spark-3.5.0-bin-hadoop3 ${DESTINATION_PATH}/spark
+ln -s   ${DESTINATION_PATH}/spark-3.5.1-bin-hadoop3 ${DESTINATION_PATH}/spark
 
 # 4) PATH
 echo "# Spark"                                          >> /home/lab/.profile
