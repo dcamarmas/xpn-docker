@@ -9,7 +9,7 @@ apt-get install -y --allow-downgrades --allow-change-held-packages --no-install-
         \
         ibverbs-providers \
         net-tools \
-        netcat \
+        netcat-traditional \
         \
         inetutils-ping \
         hping3 \

@@ -2,7 +2,7 @@
 #set -x
 
 #
-#  Copyright 2019-2024 Alejandro Calderon Mateos, Felix Garcia Carballeira, Diego Camarmas Alonso, Jose Rivadeneira Lopez-Bravo, Dario Muñoz Muñoz
+#  Copyright 2019-2025 Alejandro Calderon Mateos, Felix Garcia Carballeira, Diego Camarmas Alonso, Jose Rivadeneira Lopez-Bravo, Dario Muñoz Muñoz
 #
 #  This file is part of XPN-Docker proyect.
 #
