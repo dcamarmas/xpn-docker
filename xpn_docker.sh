@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 
 #
 #  Copyright 2019-2025 Alejandro Calderon Mateos, Felix Garcia Carballeira, Diego Camarmas Alonso, Jose Rivadeneira Lopez-Bravo, Dario Muñoz Muñoz
@@ -67,6 +67,10 @@ xpn_docker_help_c ()
 }
 
 
+#
+# machine file create/remove
+#
+
 xpn_docker_machines_create ()
 {
         # machines_mpi
@@ -116,36 +120,52 @@ xpn_docker_machines_remove ()
         rm -fr .xpn_docker_worksession
 }
 
+
+#
+# swarm create/destroy
+#
+
 xpn_docker_swarm_create ()
 {
         F_NAME=$1
+
         NL=$(wc -l $F_NAME | cut -f1 -d" ")
         NWORKERS=$((NL-1))
 
-        head -n 1 $F_NAME > /tmp/machinefile_1
+        head -n 1         $F_NAME > /tmp/machinefile_1
         tail -n $NWORKERS $F_NAME > /tmp/machinefile_2
+        HEAD_NODE=$(cat /tmp/machinefile_1)
 
-        ssh $(cat /tmp/machinefile_1) 'docker swarm init --advertise-addr $(hostname -i) | grep "docker swarm join --token"' > /tmp/docker_swarm_join.sh
-        chmod +x /tmp/docker_swarm_join.sh
+	# swarm_join
+        ssh $HEAD_NODE 'docker swarm init --advertise-addr $(hostname -i) | grep "docker swarm join --token"' > /tmp/docker_swarm_join.sh
 
         while IFS= read -r host
         do
-          ssh ${host} 'bash -s' < /tmp/docker_swarm_join.sh
+           ssh ${host} 'bash -s' < /tmp/docker_swarm_join.sh
         done < /tmp/machinefile_2
 
-        ssh $(cat /tmp/machinefile_1) "docker node ls"
+        ssh $HEAD_NODE "docker node ls"
+
+        # swarm mode
+        echo "$HEAD_NODE" > .xpn_docker_swarm
 }
 
 xpn_docker_swarm_destroy ()
 {
+	HEAD_NODE=$(cat .xpn_docker_swarm)
+
+	# swarm_leave
         echo "docker swarm leave" > /tmp/docker_swarm_leave.sh
 
         while IFS= read -r host
         do
-                ssh ${host} 'bash -s' < /tmp/docker_swarm_leave.sh
+           ssh ${host} 'bash -s' < /tmp/docker_swarm_leave.sh
         done < /tmp/machinefile_2
 
-        ssh $(cat /tmp/machinefile_1) docker swarm leave --force
+        ssh $HEAD_NODE docker swarm leave --force
+
+        # swarm mode
+        rm -fr .xpn_docker_swarm
 }
 
 
@@ -203,6 +223,36 @@ do
                 docker image build --no-cache -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
              ;;
 
+             swarm-create)
+                # Get parameters
+                shift
+                MF=$1
+
+                # Check params
+                if [ -f .xpn_docker_swarm ]; then
+                    echo ": The .xpn_docker_swarm file is found."
+                    echo ": * Please swarm-destroy first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
+
+                xpn_docker_swarm_create $MF
+             ;;
+
+             swarm-destroy)
+                # Check params
+                if [ ! -f .xpn_docker_swarm ]; then
+                    echo ": The .xpn_docker_swarm file is not found."
+                    echo ": * Please swarm-create first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
+
+                xpn_docker_swarm_destroy
+             ;;
+
              start)
                 # Get parameters
                 shift
@@ -237,21 +287,19 @@ do
                 done
              ;;
 
-             swarm-create)
-                # Get parameters
-                shift
-
-                xpn_docker_swarm_create $1
-             ;;
-
-             swarm-destroy)
-                xpn_docker_swarm_destroy
-             ;;
-
              swarm-start)
                 # Get parameters
                 shift
                 NP=$1
+
+                # Check params
+                if [ ! -f .xpn_docker_swarm ]; then
+                    echo ": The .xpn_docker_swarm file is not found."
+                    echo ": * Please swarm-create first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
 
                 # Check params
                 if [ -f .xpn_docker_worksession ]; then
