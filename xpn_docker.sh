@@ -2,7 +2,7 @@
 #set -x
 
 #
-#  Copyright 2019-2024 Alejandro Calderon Mateos, Felix Garcia Carballeira, Diego Camarmas Alonso, Jose Rivadeneira Lopez-Bravo, Dario Muñoz Muñoz
+#  Copyright 2019-2025 Alejandro Calderon Mateos, Felix Garcia Carballeira, Diego Camarmas Alonso, Jose Rivadeneira Lopez-Bravo, Dario Muñoz Muñoz
 #
 #  This file is part of XPN-Docker proyect.
 #
@@ -24,8 +24,8 @@
 xpn_docker_welcome ()
 {
         echo ""
-        echo "  XPN-Docker (v3.0.0)"
-        echo " ---------------------"
+        echo "  XPN-Docker (v3.1)"
+        echo " -------------------"
         echo ""
 }
 
@@ -138,7 +138,7 @@ do
                 # Build image
                 echo "Building initial image..."
                 HOST_UID=$(id -u)
-                HOST_GID=1000
+		HOST_GID=$(id -g)
                 docker image build --no-cache -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
              ;;
 
@@ -149,7 +149,7 @@ do
 
                 # Start container cluster (single node)
                 echo "Building containers..."
-                HOST_UID=$(id -u) HOST_GID=1000 docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$NP
+		HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$NP
                 if [ $? -gt 0 ]; then
                     echo ": The docker-compose command failed to spin up containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
@@ -195,7 +195,7 @@ do
              stop)
                 # Stopping containers
                 echo "Stopping containers..."
-                HOST_UID=$(id -u) HOST_GID=1000 docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
+		HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
                 if [ $? -gt 0 ]; then
                     echo ": The docker-compose command failed to stop containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
@@ -210,7 +210,7 @@ do
              kill)
                 # Stopping containers
                 echo "Stopping containers..."
-                HOST_UID=$(id -u) HOST_GID=1000 docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
+		HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
                 if [ $? -gt 0 ]; then
                     echo ": The docker-compose command failed to stop containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
