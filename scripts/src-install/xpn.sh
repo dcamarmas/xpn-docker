@@ -20,7 +20,7 @@ mkdir -p /home/lab/bin
 cd    ${DESTINATION_PATH}/xpn
 ./scripts/compile/build-me-xpn.sh  -m /home/lab/bin/mpich/bin/mpicc  -i /home/lab/bin
 
-# 4) Compile examples
+# 4) Compile examples and connectors
 cd ${DESTINATION_PATH}/xpn/test/performance/xpn
 make -j $(nproc) all
 
@@ -30,6 +30,10 @@ make -j $(nproc) all
 cd ${DESTINATION_PATH}/xpn/test/integrity/bypass_c
 make -j $(nproc) all
 
+cd ${DESTINATION_PATH}/xpn/src/connector_fuse
+make -j $(nproc) all
+
+# 5) Install examples and connectors
 cd ${DESTINATION_PATH}/xpn/
 make install
 

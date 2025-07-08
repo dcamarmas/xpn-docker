@@ -9,7 +9,7 @@
 
 ## Some use cases with xpn-docker
 
-* Examples using Ad-Hoc XPN:
+* Examples using XPN Ad-Hoc:
 
 <html>
  <table>
@@ -78,7 +78,7 @@ exit
 </html>
 
 
-* Examples of benchmarks with Ad-Hoc XPN:
+* Examples of benchmarks with XPN Ad-Hoc:
 
 <html>
  <table>
