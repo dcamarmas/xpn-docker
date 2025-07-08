@@ -71,7 +71,7 @@ xpn_docker_machines_create ()
         	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID_LIST > machines_mpi
 	fi
 	if [ "$MODE" == "MULTI_NODE" ]; then
-		CONTAINER_ID_LIST=$(docker service ps daloflow_node -f desired-state=running -q)
+		CONTAINER_ID_LIST=$(docker service ps xpn_docker_node -f desired-state=running -q)
 		docker inspect -f '{{range .NetworksAttachments}}{{.Addresses}}{{end}}' $CONTAINER_ID_LIST | sed "s/^\[//g" | awk 'BEGIN {FS="/"} ; {print $1}' > machines_mpi
 
 	fi
@@ -94,7 +94,7 @@ xpn_docker_machines_create ()
         mkdir -p export/nfs
 
 	# session mode
-	echo $MODE > .daloflow_worksession
+	echo $MODE > .xpn_docker_worksession
 }
 
 xpn_docker_machines_remove ()
@@ -108,7 +108,7 @@ xpn_docker_machines_remove ()
         rmdir -fail-on-non-empty export/nfs/* >& /dev/null
 
 	# Remove session file...
-	rm -fr .daloflow_worksession
+	rm -fr .xpn_docker_worksession
 }
 
 
@@ -172,8 +172,8 @@ do
                 NP=$1
 
 		# Check params
-		if [ -f .daloflow_worksession ]; then
-		    echo ": There is an already running daloflow container."
+		if [ -f .xpn_docker_worksession ]; then
+		    echo ": There is an already running xpn_docker container."
 		    echo ": * Please stop first."
 		    echo ": * Please see './xpn_docker.sh help' for more information."
 		    echo ""
@@ -206,8 +206,8 @@ do
                 NP=$1
 
 		# Check params
-		if [ -f .daloflow_worksession ]; then
-		    echo ": There is an already running daloflow container."
+		if [ -f .xpn_docker_worksession ]; then
+		    echo ": There is an already running xpn_docker container."
 		    echo ": * Please stop first."
 		    echo ": * Please see './xpn_docker.sh help' for more information."
 		    echo ""
@@ -221,7 +221,7 @@ do
 		    echo ""
 		    exit
 		fi
-		docker service scale daloflow_node=$NC
+		docker service scale xpn_docker_node=$NC
 
                 # Containers machine file
                 xpn_docker_machines_create "MULTI_NODE"
@@ -255,8 +255,8 @@ do
              stop|swarm-stop)
 		# get current session mode
 		MODE=""
-		if [ -f .daloflow_worksession ]; then
-		     MODE=$(cat .daloflow_worksession)
+		if [ -f .xpn_docker_worksession ]; then
+		     MODE=$(cat .xpn_docker_worksession)
 		fi
 
 		# Stop composition
@@ -272,7 +272,7 @@ do
 		fi
 		# Stop service
 		if [ "$MODE" == "MULTI_NODE" ]; then
-		     docker service rm daloflow_node
+		     docker service rm xpn_docker_node
 		fi
 
                 # Remove container cluster files...

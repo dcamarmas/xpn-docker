@@ -9,7 +9,7 @@ fi
 
 # 2) Get arguments
 DESTINATION_PATH=$1
-pip install py4j
+sudo apt install python3-py4j
 
 # 3) Download and install Spark
 mkdir -p ${DESTINATION_PATH}
