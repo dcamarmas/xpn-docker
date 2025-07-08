@@ -41,6 +41,7 @@ xpn_docker_help_c ()
         echo "        * Single node:"
         echo "           $0 start       <number of containers>"
         echo "        * Multi-node:"
+        echo "           $0 swarm-create <machinefile_path>"
         echo "           $0 swarm-start <number of containers>"
         echo ""
         echo "     2) To work with containers:"
@@ -48,13 +49,17 @@ xpn_docker_help_c ()
         echo "           $0 bash <container id, from 1 to number_of_containers>"
         echo "           <some work...>"
         echo "           exit"
-	echo "        * To execute \"command\" on <number of containers> containers:"
+        echo "        * To execute \"command\" on <number of containers> containers:"
         echo "           $0 mpirun <number of containers> \"<command>\""
-	echo "        * To work on a single container:"
+        echo "        * To work on a single container:"
         echo "           $0 exec <container id, from 1 to number_of_containers> \"<command>\""
         echo ""
         echo "     3) Stopping the containers:"
-        echo "        $0 stop"
+        echo "        * Single node:"
+        echo "           $0 stop"
+        echo "        * Multi-node:"
+        echo "           $0 stop"
+        echo "           $0 swarm-destroy"
         echo ""
         echo "  :: Available option to uninstall xpn-docker (remove images + containers):"
         echo "        $0 cleanup"
@@ -62,19 +67,23 @@ xpn_docker_help_c ()
 }
 
 
+#
+# machine file create/remove
+#
+
 xpn_docker_machines_create ()
 {
         # machines_mpi
-	MODE=$1
-	if [ "$MODE" == "SINGLE_NODE" ]; then
-        	CONTAINER_ID_LIST=$(docker ps -f name=node -q)
-        	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID_LIST > machines_mpi
-	fi
-	if [ "$MODE" == "MULTI_NODE" ]; then
-		CONTAINER_ID_LIST=$(docker service ps xpn_docker_node -f desired-state=running -q)
-		docker inspect -f '{{range .NetworksAttachments}}{{.Addresses}}{{end}}' $CONTAINER_ID_LIST | sed "s/^\[//g" | awk 'BEGIN {FS="/"} ; {print $1}' > machines_mpi
+        MODE=$1
+        if [ "$MODE" == "SINGLE_NODE" ]; then
+                CONTAINER_ID_LIST=$(docker ps -f name=node -q)
+                docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID_LIST > machines_mpi
+        fi
+        if [ "$MODE" == "MULTI_NODE" ]; then
+                CONTAINER_ID_LIST=$(docker service ps xpn_docker_node -f desired-state=running -q)
+                docker inspect -f '{{range .NetworksAttachments}}{{.Addresses}}{{end}}' $CONTAINER_ID_LIST | sed "s/^\[//g" | awk 'BEGIN {FS="/"} ; {print $1}' > machines_mpi
 
-	fi
+        fi
 
         # machines_mpi -> machines_hosts + etc_hosts
         echo -n "" > machines_hosts
@@ -87,14 +96,14 @@ xpn_docker_machines_create ()
           I=$((I+1))
         done < machines_mpi
 
-	# machines_mpi -> machines_horovod
-	cat machines_mpi | sed 's/.*/& slots=1/g' > machines_horovod
+        # machines_mpi -> machines_horovod
+        cat machines_mpi | sed 's/.*/& slots=1/g' > machines_horovod
 
-	# directories
+        # directories
         mkdir -p export/nfs
 
-	# session mode
-	echo $MODE > .xpn_docker_worksession
+        # session mode
+        echo $MODE > .xpn_docker_worksession
 }
 
 xpn_docker_machines_remove ()
@@ -104,11 +113,59 @@ xpn_docker_machines_remove ()
         rm -fr etc_hosts
         rm -fr machines_horovod
 
-	# directories
+        # directories
         rmdir -fail-on-non-empty export/nfs/* >& /dev/null
 
-	# Remove session file...
-	rm -fr .xpn_docker_worksession
+        # Remove session file...
+        rm -fr .xpn_docker_worksession
+}
+
+
+#
+# swarm create/destroy
+#
+
+xpn_docker_swarm_create ()
+{
+        F_NAME=$1
+
+        NL=$(wc -l $F_NAME | cut -f1 -d" ")
+        NWORKERS=$((NL-1))
+
+        head -n 1         $F_NAME > /tmp/machinefile_1
+        tail -n $NWORKERS $F_NAME > /tmp/machinefile_2
+        HEAD_NODE=$(cat /tmp/machinefile_1)
+
+	# swarm_join
+        ssh $HEAD_NODE 'docker swarm init --advertise-addr $(hostname -i) | grep "docker swarm join --token"' > /tmp/docker_swarm_join.sh
+
+        while IFS= read -r host
+        do
+           ssh ${host} 'bash -s' < /tmp/docker_swarm_join.sh
+        done < /tmp/machinefile_2
+
+        ssh $HEAD_NODE "docker node ls"
+
+        # swarm mode
+        echo "$HEAD_NODE" > .xpn_docker_swarm
+}
+
+xpn_docker_swarm_destroy ()
+{
+	HEAD_NODE=$(cat .xpn_docker_swarm)
+
+	# swarm_leave
+        echo "docker swarm leave" > /tmp/docker_swarm_leave.sh
+
+        while IFS= read -r host
+        do
+           ssh ${host} 'bash -s' < /tmp/docker_swarm_leave.sh
+        done < /tmp/machinefile_2
+
+        ssh $HEAD_NODE docker swarm leave --force
+
+        # swarm mode
+        rm -fr .xpn_docker_swarm
 }
 
 
@@ -143,7 +200,7 @@ fi
 # for each argument, try to execute it
 #
 
-DOCKER_PREFIX_NAME=docker
+DOCKER_PREFIX_NAME=xpn_docker
 mkdir -p export
 
 while (( "$#" ))
@@ -162,8 +219,38 @@ do
                 # Build image
                 echo "Building initial image..."
                 HOST_UID=$(id -u)
-		HOST_GID=$(id -g)
+                HOST_GID=$(id -g)
                 docker image build --no-cache -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+             ;;
+
+             swarm-create)
+                # Get parameters
+                shift
+                MF=$1
+
+                # Check params
+                if [ -f .xpn_docker_swarm ]; then
+                    echo ": The .xpn_docker_swarm file is found."
+                    echo ": * Please swarm-destroy first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
+
+                xpn_docker_swarm_create $MF
+             ;;
+
+             swarm-destroy)
+                # Check params
+                if [ ! -f .xpn_docker_swarm ]; then
+                    echo ": The .xpn_docker_swarm file is not found."
+                    echo ": * Please swarm-create first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
+
+                xpn_docker_swarm_destroy
              ;;
 
              start)
@@ -171,18 +258,18 @@ do
                 shift
                 NP=$1
 
-		# Check params
-		if [ -f .xpn_docker_worksession ]; then
-		    echo ": There is an already running xpn_docker container."
-		    echo ": * Please stop first."
-		    echo ": * Please see './xpn_docker.sh help' for more information."
-		    echo ""
-		    exit
-		fi
+                # Check params
+                if [ -f .xpn_docker_worksession ]; then
+                    echo ": There is an already running xpn_docker container."
+                    echo ": * Please stop first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
 
                 # Start container cluster (single node)
                 echo "Building containers..."
-		HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$NP
+                HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$NP
                 if [ $? -gt 0 ]; then
                     echo ": The docker compose command failed to spin up containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
@@ -205,23 +292,32 @@ do
                 shift
                 NP=$1
 
-		# Check params
-		if [ -f .xpn_docker_worksession ]; then
-		    echo ": There is an already running xpn_docker container."
-		    echo ": * Please stop first."
-		    echo ": * Please see './xpn_docker.sh help' for more information."
-		    echo ""
-		    exit
-		fi
+                # Check params
+                if [ ! -f .xpn_docker_swarm ]; then
+                    echo ": The .xpn_docker_swarm file is not found."
+                    echo ": * Please swarm-create first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
 
-		# Start container cluster
-		docker stack deploy --compose-file docker/dockerstack.yml $DOCKER_PREFIX_NAME
-		if [ $? -gt 0 ]; then
-		    echo ": The docker stack deploy command failed to spin up containers."
-		    echo ""
-		    exit
-		fi
-		docker service scale xpn_docker_node=$NC
+                # Check params
+                if [ -f .xpn_docker_worksession ]; then
+                    echo ": There is an already running xpn_docker container."
+                    echo ": * Please stop first."
+                    echo ": * Please see './xpn_docker.sh help' for more information."
+                    echo ""
+                    exit
+                fi
+
+                # Start container cluster
+                docker stack deploy --compose-file docker/dockerstack.yml $DOCKER_PREFIX_NAME
+                if [ $? -gt 0 ]; then
+                    echo ": The docker stack deploy command failed to spin up containers."
+                    echo ""
+                    exit
+                fi
+                docker service scale xpn_docker_node=$NC
 
                 # Containers machine file
                 xpn_docker_machines_create "MULTI_NODE"
@@ -253,27 +349,27 @@ do
              ;;
 
              stop|swarm-stop)
-		# get current session mode
-		MODE=""
-		if [ -f .xpn_docker_worksession ]; then
-		     MODE=$(cat .xpn_docker_worksession)
-		fi
+                # get current session mode
+                MODE=""
+                if [ -f .xpn_docker_worksession ]; then
+                     MODE=$(cat .xpn_docker_worksession)
+                fi
 
-		# Stop composition
+                # Stop composition
                 echo "Stopping containers..."
-		if [ "$MODE" == "SINGLE_NODE" ]; then
-		     HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
+                if [ "$MODE" == "SINGLE_NODE" ]; then
+                     HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
                      if [ $? -gt 0 ]; then
                          echo ": The docker compose command failed to stop containers."
                          echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
                          echo ""
                          exit
                      fi
-		fi
-		# Stop service
-		if [ "$MODE" == "MULTI_NODE" ]; then
-		     docker service rm xpn_docker_node
-		fi
+                fi
+                # Stop service
+                if [ "$MODE" == "MULTI_NODE" ]; then
+                     docker service rm xpn_docker_node
+                fi
 
                 # Remove container cluster files...
                 xpn_docker_machines_remove
@@ -282,7 +378,7 @@ do
              kill)
                 # Stopping containers
                 echo "Stopping containers..."
-		HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
+                HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
                 if [ $? -gt 0 ]; then
                     echo ": The docker compose command failed to stop containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
@@ -342,7 +438,7 @@ do
                        $A
              ;;
 
-	     exec)
+             exec)
                 # Get parameters
                 shift
                 CO_ID=$1
@@ -376,9 +472,9 @@ do
                 shift
                 NP=$1
 
-		# Sleep...
+                # Sleep...
                 echo "Sleeping $NP seconds..."
-		sleep ${NP}
+                sleep ${NP}
              ;;
 
              *)
