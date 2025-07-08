@@ -6,7 +6,7 @@ sudo chown lab:lab /shared
 
 NL=$(cat /work/machines_mpi | wc -l)
 UID=$(id -u)
-GID=1000
+GID=$(id -g)
 
 # 1) build configuration file /shared/config.txt
 # 2) start mpi_servers in background

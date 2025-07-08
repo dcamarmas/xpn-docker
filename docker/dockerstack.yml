@@ -1,0 +1,25 @@
+
+services:
+  node:
+    image: xpn-docker
+    volumes:
+      - type: bind
+        source: ..
+        target: /work
+      - type: bind
+        source: ../export
+        target: /export
+      - type: bind
+        source: /lib/modules
+        target: /lib/modules
+      - shared:/shared
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend
+
+networks:
+  backend:
+    ipam:
+      config:
+        - subnet: 192.168.0.0/16
+

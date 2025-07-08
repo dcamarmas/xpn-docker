@@ -1,11 +1,10 @@
-ARG UBUNTU_VERSION=22.04
+ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION} AS base
 
 ARG UID
 ARG GID
 
 ENV DEBIAN_FRONTEND=noninteractive
-
 
 # A) Install essential software
 COPY scripts/pkg-install/*.sh /tmp/
@@ -16,10 +15,13 @@ COPY scripts/pkg-install/*.sh /tmp/
  RUN  /tmp/essential-python.sh
 
 # B) Setup lab user
-RUN addgroup --gid $GID lab && \
-    adduser  --uid $UID --gid $GID --disabled-password --gecos "" lab && \
-    echo 'lab ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-RUN echo 'lab:lab' | chpasswd
+RUN getent group  "$GID" > /dev/null || addgroup --gid $GID lab
+RUN getent group  "$GID" > /dev/null && export GNAME=$(getent group  "$GID" | cut -d: -f1) && sudo groupmod -n lab "$GNAME"
+RUN getent passwd "$UID" > /dev/null || adduser  --uid $UID --gid $GID --disabled-password --gecos "" lab
+RUN getent passwd "$UID" > /dev/null && export UNAME=$(getent passwd "$UID" | cut -d: -f1) && sudo usermod  -l lab -m -d /home/lab "$UNAME"
+
+RUN echo 'lab ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+RUN echo 'lab:lab' | sudo chpasswd
 
 # C) Install SSH (from package)
 COPY scripts/pkg-install/*.sh /tmp/
@@ -28,25 +30,27 @@ COPY scripts/pkg-install/*.sh /tmp/
  RUN chown -R lab:lab /home/lab
 
 # D) Install MPICH and XPN (from source)
+USER lab
 COPY scripts/src-install/*.sh /tmp/
- RUN  chmod a+x /tmp/*.sh
+ RUN  sudo chmod a+x /tmp/*.sh
  RUN  /tmp/mpich.sh   /home/lab/src/
  RUN  /tmp/spark.sh   /home/lab/src/
  RUN  /tmp/xpn.sh     /home/lab/src/
  RUN  /tmp/ior.sh     /home/lab/src/
 
 # User initial home
+USER lab
 RUN mkdir -p  /home/lab/bin  /home/lab/test  /home/lab/replication  /home/lab/spark  /home/lab/benchmark
 ADD lab-home/bin          /home/lab/bin
 ADD lab-home/test         /home/lab/test
 ADD lab-home/spark        /home/lab/spark
 ADD lab-home/benchmark    /home/lab/benchmark
 ADD lab-home/replication  /home/lab/replication
-RUN chmod a+x /home/lab/*/*.sh
-RUN chown -R lab:lab /home/lab
+RUN sudo chmod a+x /home/lab/*/*.sh
 WORKDIR "/home/lab"
 
 # Container start-up
+USER root
 RUN mkdir -p /work
 RUN mkdir -p /srv
 COPY docker/dockerstart.sh /srv/
