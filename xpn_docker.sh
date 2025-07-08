@@ -182,9 +182,9 @@ do
 
                 # Start container cluster (single node)
                 echo "Building containers..."
-		HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$NP
+		HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$NP
                 if [ $? -gt 0 ]; then
-                    echo ": The docker-compose command failed to spin up containers."
+                    echo ": The docker compose command failed to spin up containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
                     echo ""
                     exit
@@ -262,9 +262,9 @@ do
 		# Stop composition
                 echo "Stopping containers..."
 		if [ "$MODE" == "SINGLE_NODE" ]; then
-		     HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
+		     HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
                      if [ $? -gt 0 ]; then
-                         echo ": The docker-compose command failed to stop containers."
+                         echo ": The docker compose command failed to stop containers."
                          echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
                          echo ""
                          exit
@@ -282,9 +282,9 @@ do
              kill)
                 # Stopping containers
                 echo "Stopping containers..."
-		HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
+		HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
                 if [ $? -gt 0 ]; then
-                    echo ": The docker-compose command failed to stop containers."
+                    echo ": The docker compose command failed to stop containers."
                     echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
                     echo ""
                     exit
