@@ -220,7 +220,9 @@ do
                 echo "Building initial image..."
                 HOST_UID=$(id -u)
                 HOST_GID=$(id -g)
-                docker image build --no-cache -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+                #docker image build --no-cache -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+                docker image build -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+
              ;;
 
              swarm-create)
@@ -290,7 +292,7 @@ do
              swarm-start)
                 # Get parameters
                 shift
-                NP=$1
+                NC=$1
 
                 # Check params
                 if [ ! -f .xpn_docker_swarm ]; then
@@ -327,7 +329,8 @@ do
                 # Get parameters
                 shift
                 CO_ID=$1
-                CO_NC=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | wc -l)
+                #CO_NC=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | wc -l)
+                CO_NC=$(docker service ls -f name=$DOCKER_PREFIX_NAME -q | wc -l)
 
                 # Check params
                 if [ $CO_ID -lt 1 ]; then
@@ -343,7 +346,8 @@ do
 
                 # Bash on container...
                 echo "Executing /bin/bash on container $CO_ID..."
-                CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
+                #CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
+                CO_NAME=$(docker service ls -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
                 # echo "Coname $CO_NAME"
                 docker exec -it --user lab $CO_NAME /bin/bash -l
              ;;
