@@ -1,4 +1,4 @@
-# Expand Docker (v3.1)
+# Expand Docker (v3.2)
 
 
 ## Contents
@@ -8,6 +8,57 @@
 
 
 ## Some use cases with xpn-docker
+
+  * Examples using XPN Ad-Hoc:
+
+    * Expand (fuse)
+
+      ```bash
+      : 1. To start <b>3</b> containers
+      ./xpn_docker.sh start 3
+      ./xpn_docker.sh status
+
+      : 2. Work from container 1
+      ./xpn_docker.sh bash 1
+      ./test/xpn-mpi-fuse.sh
+      exit
+
+      : 3. Stop all containers
+      ./xpn_docker.sh stop
+      ```
+
+    * Expand (bypass)
+
+      ```bash
+      : 1. To start <b>3</b> containers
+      ./xpn_docker.sh start 3
+      ./xpn_docker.sh status
+
+      : 2. Work from container 1
+      ./xpn_docker.sh bash 1
+      ./test/xpn-mpi-bypass.sh
+      exit
+
+      : 3. Stop all containers
+      ./xpn_docker.sh stop
+      ```
+
+    * Expand (native)
+
+      ```bash
+      : 1. To start <b>3</b> containers
+      ./xpn_docker.sh start 3
+      ./xpn_docker.sh status
+
+      : 2. Work from container 1
+      ./xpn_docker.sh bash 1
+      ./test/xpn-mpi-native.sh
+      exit
+
+      : 3. Stop all containers
+      ./xpn_docker.sh stop
+      ```
+
 
 * Examples using XPN Ad-Hoc:
 
@@ -29,17 +80,6 @@ Expand (native)
   <tr>
   <td>
 <pre>
-: 1. To start <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh status
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh bash <b>1</b>
-<b>./test/xpn-mpi-fuse.sh</b>
-exit
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
 </pre>
   </td>
   <td>
