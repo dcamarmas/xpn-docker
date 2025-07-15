@@ -12,7 +12,9 @@ services:
       - type: bind
         source: /lib/modules
         target: /lib/modules
-      - shared:/shared
+      - type: bind
+        source: ..
+        target: /shared
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - backend
