@@ -33,7 +33,7 @@ jobs:
     - name: Login to GitHub Package Registry        
       run:  echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     - name: Build & Push Docker image
-      run:  docker buildx build -t ghcr.io/${{ github.repository_owner }}/xpn-docker:${GITHUB_SHA} -t ghcr.io/${{ github.repository_owner }}/xpn-docker  -f ./docker/dockerfile  --push --build-arg UID=$(id -u) --build-arg GID=$(id -g) --platform=linux/amd64,linux/arm64,linux/arm/v7 .
+      run:  cd ../xpn-docker && docker buildx build -t ghcr.io/${{ github.repository_owner }}/xpn-docker:${GITHUB_SHA} -t ghcr.io/${{ github.repository_owner }}/xpn-docker  -f ./docker/dockerfile  --push --build-arg UID=$(id -u) --build-arg GID=$(id -g) --platform=linux/amd64,linux/arm64,linux/arm/v7 .
       working-directory: ../xpn-docker
 
   push-xpn-docker:    
