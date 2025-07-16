@@ -34,7 +34,13 @@ xpn_docker_help_c ()
         echo "  Usage: $0 <action> [<options>]"
         echo ""
         echo "  :: First time + each time docker/dockerfile is updated, please execute:"
-        echo "        $0 build"
+        echo "        * Single node:"
+        echo "           $0 build"
+        echo "        * Multi-node:"
+        echo "           $0 build"
+        echo "           $0 save"
+        echo "           Change other compute nodes and load the image:"
+        echo "           $0 load"
         echo ""
         echo "  :: Working with xpn-docker:"
         echo "     1) Starting the containers:"
@@ -127,29 +133,29 @@ xpn_docker_machines_remove ()
 
 xpn_docker_swarm_create ()
 {
-	# Check params
-	if [ -f .xpn_docker_swarm ]; then
-	    echo ": The .xpn_docker_swarm file is found."
-	    echo ": * Please swarm-destroy first."
-	    echo ": * Please see './xpn_docker.sh help' for more information."
-	    echo ""
-	    exit
-	fi
+        # Check params
+        if [ -f .xpn_docker_swarm ]; then
+            echo ": The .xpn_docker_swarm file is found."
+            echo ": * Please swarm-destroy first."
+            echo ": * Please see './xpn_docker.sh help' for more information."
+            echo ""
+            exit
+        fi
 
-	# get machinefile name
+        # get machinefile name
         MACHINE_FILE=$1
-	if [ "$MACHINE_FILE" == "" ]; then
-	    echo ": The machinefile name is empty."
-	    echo ": * Please see './xpn_docker.sh help' for more information."
-	    echo ""
-	    exit
-	fi
-	if [ ! -f $MACHINE_FILE ]; then
-	    echo ": The machinefile '$MACHINE_FILE' does not exist."
-	    echo ": * Please see './xpn_docker.sh help' for more information."
-	    echo ""
-	    exit
-	fi
+        if [ "$MACHINE_FILE" == "" ]; then
+            echo ": The machinefile name is empty."
+            echo ": * Please see './xpn_docker.sh help' for more information."
+            echo ""
+            exit
+        fi
+        if [ ! -f $MACHINE_FILE ]; then
+            echo ": The machinefile '$MACHINE_FILE' does not exist."
+            echo ": * Please see './xpn_docker.sh help' for more information."
+            echo ""
+            exit
+        fi
 
         NL=$(cat $MACHINE_FILE | grep -v ^$ | wc -l | cut -f1 -d" ")
         NWORKERS=$((NL-1))
@@ -158,7 +164,7 @@ xpn_docker_swarm_create ()
         tail -n $NWORKERS $MACHINE_FILE > /tmp/machinefile_2
         HEAD_NODE=$(cat /tmp/machinefile_1)
 
-	# swarm_join
+        # swarm_join
         ssh $HEAD_NODE 'docker swarm init --advertise-addr $(hostname -i) | grep "docker swarm join --token"' > /tmp/docker_swarm_join.sh
 
         while IFS= read -r host
@@ -174,19 +180,19 @@ xpn_docker_swarm_create ()
 
 xpn_docker_swarm_destroy ()
 {
-	# Check params
-	if [ ! -f .xpn_docker_swarm ]; then
-	    echo ": The .xpn_docker_swarm file is not found."
-	    echo ": * Please swarm-create first."
-	    echo ": * Please see './xpn_docker.sh help' for more information."
-	    echo ""
-	    exit
-	fi
+        # Check params
+        if [ ! -f .xpn_docker_swarm ]; then
+            echo ": The .xpn_docker_swarm file is not found."
+            echo ": * Please swarm-create first."
+            echo ": * Please see './xpn_docker.sh help' for more information."
+            echo ""
+            exit
+        fi
 
-	# get head node
-	HEAD_NODE=$(cat .xpn_docker_swarm)
+        # get head node
+        HEAD_NODE=$(cat .xpn_docker_swarm)
 
-	# swarm_leave
+        # swarm_leave
         echo "docker swarm leave" > /tmp/docker_swarm_leave.sh
 
         while IFS= read -r host
@@ -207,180 +213,206 @@ xpn_docker_swarm_destroy ()
 
 xpn_docker_build ()
 {
-	# Check params
-	if [ ! -f docker/dockerfile ]; then
-	    echo ": The docker/dockerfile file is not found."
-	    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
-	    echo ""
-	    exit
-	fi
+        # Check params
+        if [ ! -f docker/dockerfile ]; then
+            echo ": The docker/dockerfile file is not found."
+            echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
+            echo ""
+            exit
+        fi
 
-	# Build image
-	HOST_UID=$1
-	HOST_GID=$2
-	CACHE=$3
+        # Build image
+        HOST_UID=$1
+        HOST_GID=$2
+        CACHE=$3
 
-	docker image build ${CACHE} -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+        docker image build ${CACHE} -t expandfs/xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+}
+
+xpn_docker_save ()
+{
+   echo "Saving xpn-docker image..."
+   docker image save xpn-docker | gzip -5 > xpn_docker.tgz 
+}
+
+xpn_docker_load ()
+{
+   # Check params
+   if [ ! -f xpn_docker_v2.tgz ]; then
+      echo ": The xpn_docker_v2.tgz file is not found."
+      echo ": * Please see ./xpn_docker.sh help for more information."
+      echo ""
+      exit
+   fi
+
+   echo "Loading xpn-docker image..."
+   cat xpn_docker.tgz | gunzip - | docker image load
+}
+
+xpn_docker_pull ()
+{
+   echo "Pulling xpn-docker image..."
+   docker pull expandfs/xpn-docker
 }
 
 xpn_docker_start ()
 {
-	# get uid/gid
-	HOST_UID_VALUE=$(id -u)
-	HOST_GID_VALUE=$(id -g)
-	N_ELTOS=$1
+        # get uid/gid
+        HOST_UID_VALUE=$(id -u)
+        HOST_GID_VALUE=$(id -g)
+        N_ELTOS=$1
 
-	# Check params
-	if [ -f .xpn_docker_worksession ]; then
-	    echo ": There is an already running xpn_docker container."
-	    echo ": * Please stop first."
-	    echo ": * Please see './xpn_docker.sh help' for more information."
-	    echo ""
-	    exit
-	fi
+        # Check params
+        if [ -f .xpn_docker_worksession ]; then
+            echo ": There is an already running xpn_docker container."
+            echo ": * Please stop first."
+            echo ": * Please see './xpn_docker.sh help' for more information."
+            echo ""
+            exit
+        fi
 
-	# Check swarm active -> multi-node
-	MODE=SINGLE_NODE
-	if [ -f .xpn_docker_swarm ]; then
-	    MODE=MULTI_NODE
-	fi
+        # Check swarm active -> multi-node
+        MODE=SINGLE_NODE
+        if [ -f .xpn_docker_swarm ]; then
+            MODE=MULTI_NODE
+        fi
 
-	# single/multi
-	if [ "$MODE" == "SINGLE_NODE" ]; then
+        # single/multi
+        if [ "$MODE" == "SINGLE_NODE" ]; then
 
-		# Start container cluster (single node)
-		echo "Building containers..."
-		HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$N_ELTOS
-		if [ $? -gt 0 ]; then
-		    echo ": The docker compose command failed to spin up containers."
-		    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
-		    echo ""
-		    exit
-		fi
+                # Start container cluster (single node)
+                echo "Building containers..."
+                HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$N_ELTOS
+                if [ $? -gt 0 ]; then
+                    echo ": The docker compose command failed to spin up containers."
+                    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
+                    echo ""
+                    exit
+                fi
 
-		# Containers machine file
-		xpn_docker_machines_create "SINGLE_NODE"
+                # Containers machine file
+                xpn_docker_machines_create "SINGLE_NODE"
 
-		# Update /etc/hosts on each node
-		CONTAINER_ID_LIST=$(docker ps -f name=docker -q)
-		for C in $CONTAINER_ID_LIST; do
-		    docker container exec -it $C /work/lab-home/bin/hosts_update.sh
-		done
+                # Update /etc/hosts on each node
+                CONTAINER_ID_LIST=$(docker ps -f name=docker -q)
+                for C in $CONTAINER_ID_LIST; do
+                    docker container exec -it $C /work/lab-home/bin/hosts_update.sh
+                done
 
-	fi
-	if [ "$MODE" == "MULTI_NODE" ]; then
+        fi
+        if [ "$MODE" == "MULTI_NODE" ]; then
 
-		# Start container cluster (multi node)
-		docker stack deploy --compose-file docker/dockerstack.yml $DOCKER_PREFIX_NAME
-		if [ $? -gt 0 ]; then
-		    echo ": The docker stack deploy command failed to spin up containers."
-		    echo ""
-		    exit
-		fi
+                # Start container cluster (multi node)
+                docker stack deploy --compose-file docker/dockerstack.yml $DOCKER_PREFIX_NAME
+                if [ $? -gt 0 ]; then
+                    echo ": The docker stack deploy command failed to spin up containers."
+                    echo ""
+                    exit
+                fi
 
-		docker service scale xpn_docker_node=$N_ELTOS
-		if [ $? -gt 0 ]; then
-		    echo ": The docker service scale command failed to spin up containers."
-		    echo ""
-		    exit
-		fi
+                docker service scale xpn_docker_node=$N_ELTOS
+                if [ $? -gt 0 ]; then
+                    echo ": The docker service scale command failed to spin up containers."
+                    echo ""
+                    exit
+                fi
 
-		# Containers machine file
-		xpn_docker_machines_create "MULTI_NODE"
-	fi
+                # Containers machine file
+                xpn_docker_machines_create "MULTI_NODE"
+        fi
 }
 
 xpn_docker_stop ()
 {
-	# get uid/gid
-	HOST_UID_VALUE=$(id -u)
-	HOST_GID_VALUE=$(id -g)
+        # get uid/gid
+        HOST_UID_VALUE=$(id -u)
+        HOST_GID_VALUE=$(id -g)
 
-	# get current session mode
-	MODE=""
-	if [ -f .xpn_docker_worksession ]; then
-	     MODE=$(cat .xpn_docker_worksession)
-	fi
+        # get current session mode
+        MODE=""
+        if [ -f .xpn_docker_worksession ]; then
+             MODE=$(cat .xpn_docker_worksession)
+        fi
 
-	# Check swarm active -> multi-node
-	echo "Stopping containers..."
-	if [ "$MODE" == "SINGLE_NODE" ]; then
+        # Check swarm active -> multi-node
+        echo "Stopping containers..."
+        if [ "$MODE" == "SINGLE_NODE" ]; then
 
-	     HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
-	     if [ $? -gt 0 ]; then
-		 echo ": The 'docker compose' command failed to stop containers."
-		 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
-		 echo ""
-		 exit
-	     fi
+             HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
+             if [ $? -gt 0 ]; then
+                 echo ": The 'docker compose' command failed to stop containers."
+                 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
+                 echo ""
+                 exit
+             fi
 
-	fi
-	if [ "$MODE" == "MULTI_NODE" ]; then
+        fi
+        if [ "$MODE" == "MULTI_NODE" ]; then
 
-	     docker service rm xpn_docker_node
-	     if [ $? -gt 0 ]; then
-		 echo ": The 'docker service' command failed to stop containers."
-		 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
-		 echo ""
-		 exit
-	     fi
+             docker service rm xpn_docker_node
+             if [ $? -gt 0 ]; then
+                 echo ": The 'docker service' command failed to stop containers."
+                 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
+                 echo ""
+                 exit
+             fi
 
-	fi
+        fi
 
-	# Remove container cluster files...
-	xpn_docker_machines_remove
+        # Remove container cluster files...
+        xpn_docker_machines_remove
 }
 
 xpn_docker_bash ()
 {
-	# Get parameters
-	CO_ID=$1
-	CO_NC=$2
+        # Get parameters
+        CO_ID=$1
+        CO_NC=$2
 
-	# Check params
-	if [ $CO_ID -lt 1 ]; then
-		echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
-		shift
-		continue
-	fi
-	if [ $CO_ID -gt $CO_NC ]; then
-		echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
-		shift
-		continue
-	fi
+        # Check params
+        if [ $CO_ID -lt 1 ]; then
+                echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
+                shift
+                continue
+        fi
+        if [ $CO_ID -gt $CO_NC ]; then
+                echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
+                shift
+                continue
+        fi
 
-	# get current session mode
-	MODE=""
-	if [ -f .xpn_docker_worksession ]; then
-	     MODE=$(cat .xpn_docker_worksession)
-	fi
+        # get current session mode
+        MODE=""
+        if [ -f .xpn_docker_worksession ]; then
+             MODE=$(cat .xpn_docker_worksession)
+        fi
 
-	# get current session mode
-	if [ "$MODE" == "SINGLE_NODE" ]; then
+        # get current session mode
+        if [ "$MODE" == "SINGLE_NODE" ]; then
 
-	     # Bash on container...
-	     CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
-	     echo "Executing /bin/bash on container $CO_NAME with container id: $CO_ID ..."
-	     docker exec -it --user lab $CO_NAME /bin/bash -l
+             # Bash on container...
+             CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
+             echo "Executing /bin/bash on container $CO_NAME with container id: $CO_ID ..."
+             docker exec -it --user lab $CO_NAME /bin/bash -l
 
-	fi
-	if [ "$MODE" == "MULTI_NODE" ]; then
+        fi
+        if [ "$MODE" == "MULTI_NODE" ]; then
 
-	     # ssh to container...
-	     CO_IP=$(head -$1 machines_mpi | tail -1)
+             # ssh to container...
+             CO_IP=$(head -$1 machines_mpi | tail -1)
              CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -1)
-	     if [ "x$CO_NAME" == "x" ]; then
+             if [ "x$CO_NAME" == "x" ]; then
                   echo ": There is not a running xpn container on this node."
-	          echo ": * Please swarm-create first."
-	          echo ": * Please see ./xpn_docker.sh help for more information."
-	          echo ""
+                  echo ": * Please swarm-create first."
+                  echo ": * Please see ./xpn_docker.sh help for more information."
+                  echo ""
                   exit
-	     fi
+             fi
 
-	     echo "Executing /bin/bash on container $CO_NAME ..."
-	     docker container exec -it $CO_NAME /usr/bin/ssh $CO_IP
+             echo "Executing /bin/bash on container $CO_NAME ..."
+             docker container exec -it $CO_NAME /usr/bin/ssh $CO_IP
 
-	fi
+        fi
 }
 
 
@@ -423,7 +455,7 @@ do
         arg_i=$1
         case $arg_i in
              clean-build)
-	        echo "Building initial clean image..."
+                echo "Building initial clean image..."
                 HOST_UID=$(id -u)
                 HOST_GID=$(id -g)
 
@@ -431,11 +463,29 @@ do
              ;;
 
              build)
-	        echo "Building initial image..."
+                echo "Building initial image..."
                 HOST_UID=$(id -u)
                 HOST_GID=$(id -g)
 
                 xpn_docker_build $HOST_UID $HOST_GID ""
+             ;;
+
+             image-save)
+                echo "Saving image..."
+
+                xpn_docker_save
+             ;;
+
+             image-load)
+                echo "Loading image..."
+                
+                xpn_docker_load
+             ;;
+
+             image-pull)
+                echo "Pulling image..."
+                
+                xpn_docker_pull
              ;;
 
              swarm-create)
@@ -463,10 +513,10 @@ do
              ;;
 
              bash)
-		# Get parameters
-		shift
-		CO_ID=$1
-		CO_NC=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | wc -l)
+                # Get parameters
+                shift
+                CO_ID=$1
+                CO_NC=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | wc -l)
 
                 xpn_docker_bash ${CO_ID} ${CO_NC}
              ;;
