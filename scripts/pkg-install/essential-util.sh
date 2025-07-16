@@ -12,7 +12,7 @@ apt-get install -y --allow-downgrades --allow-change-held-packages --no-install-
         ubuntu-restricted-extras \
         imagemagick \
         \
-        sudo vim man-db \
+        sudo vim man-db less \
         \
         kmod \
         nfs-common nfs-kernel-server \

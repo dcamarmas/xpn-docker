@@ -1,5 +1,5 @@
 
-Expand Docker (v3.1)
+Expand Docker (v3.2)
 ====================
 
 Contents
