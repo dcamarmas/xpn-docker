@@ -226,13 +226,12 @@ xpn_docker_build ()
         HOST_GID=$2
         CACHE=$3
 
-        docker image build ${CACHE} -t xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
+        docker image build ${CACHE} -t expandfs/xpn-docker --build-arg UID=$HOST_UID --build-arg GID=$HOST_GID -f docker/dockerfile .
 }
 
 xpn_docker_save ()
 {
    echo "Saving xpn-docker image..."
-   #IMAGE_ID_LIST=$(docker image ls|grep xpn-docker|grep latest|awk '{print $3}')
    docker image save xpn-docker | gzip -5 > xpn_docker.tgz 
 }
 
@@ -248,6 +247,12 @@ xpn_docker_load ()
 
    echo "Loading xpn-docker image..."
    cat xpn_docker.tgz | gunzip - | docker image load
+}
+
+xpn_docker_pull ()
+{
+   echo "Pulling xpn-docker image..."
+   docker pull expandfs/xpn-docker
 }
 
 xpn_docker_start ()
@@ -475,6 +480,12 @@ do
                 echo "Loading image..."
                 
                 xpn_docker_load
+             ;;
+
+             image-pull)
+                echo "Pulling image..."
+                
+                xpn_docker_pull
              ;;
 
              swarm-create)
