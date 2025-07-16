@@ -138,6 +138,18 @@ xpn_docker_swarm_create ()
 
 	# get machinefile name
         MACHINE_FILE=$1
+	if [ "$MACHINE_FILE" == "" ]; then
+	    echo ": The machinefile name is empty."
+	    echo ": * Please see './xpn_docker.sh help' for more information."
+	    echo ""
+	    exit
+	fi
+	if [ ! -f $MACHINE_FILE ]; then
+	    echo ": The machinefile '$MACHINE_FILE' does not exist."
+	    echo ": * Please see './xpn_docker.sh help' for more information."
+	    echo ""
+	    exit
+	fi
 
         NL=$(cat $MACHINE_FILE | grep -v ^$ | wc -l | cut -f1 -d" ")
         NWORKERS=$((NL-1))

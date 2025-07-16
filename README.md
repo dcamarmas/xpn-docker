@@ -9,11 +9,10 @@
 
 ## Some use cases with xpn-docker
 
-* Examples using XPN Ad-Hoc:
+### Examples using XPN Ad-Hoc
 
-<html>
- <table>
-
+  <html>
+  <table>
   <tr>
   <td>
 Expand (fuse)
@@ -25,63 +24,73 @@ Expand (bypass)
 Expand (native)
   </td>
   </tr>
-
   <tr>
   <td>
-<pre>
-: 1. To start <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh status
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh bash <b>1</b>
-<b>./test/xpn-mpi-fuse.sh</b>
-exit
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
+  </html>
+
+  ```bash
+  : 1. To start 3 containers
+  ./xpn_docker.sh start 3
+  ./xpn_docker.sh status
+
+  : 2. Work from container 1
+  ./xpn_docker.sh bash 1
+  ./test/xpn-mpi-fuse.sh
+  exit
+
+  : 3. Stop all containers
+  ./xpn_docker.sh stop
+  ```
+
+  <html>
   </td>
   <td>
-<pre>
-: 1. Spin up <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh status
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh bash <b>1</b>
-<b>./test/xpn-mpi-bypass.sh</b>
-exit
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
+  </html>
+
+  ```bash
+  : 1. To start 3 containers
+  ./xpn_docker.sh start 3
+  ./xpn_docker.sh status
+
+  : 2. Work from container 1
+  ./xpn_docker.sh bash 1
+  ./test/xpn-mpi-bypass.sh
+  exit
+
+  : 3. Stop all containers
+  ./xpn_docker.sh stop
+  ```
+
+  <html>
   </td>
   <td>
-<pre>
-: 1. Spin up <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh status
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh bash <b>1</b>
-<b>./test/xpn-mpi-native.sh</b>
-exit
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
+  </html>
+
+  ```bash
+  : 1. To start 3 containers
+  ./xpn_docker.sh start 3
+  ./xpn_docker.sh status
+
+  : 2. Work from container 1
+  ./xpn_docker.sh bash 1
+  ./test/xpn-mpi-native.sh
+  exit
+
+  : 3. Stop all containers
+  ./xpn_docker.sh stop
+  ```
+
+  <html>
   </td>
   </tr>
+  </table>
+  </html>
 
- </table>
-</html>
 
+### Examples of benchmarks with XPN Ad-Hoc
 
-* Examples of benchmarks with XPN Ad-Hoc:
-
-<html>
- <table>
+  <html>
+  <table>
   <tr>
   <td>
 MDtest
@@ -94,62 +103,73 @@ IOR
   </tr>
   <tr>
   <td>
-<pre>
-: 1. To start <b>3</b> containers,
-: 2. sleep 5 seconds,
-: 3. work from container <b>1</b>,
-: 4. and stop all containers
-<br>
-./xpn_docker.sh \
-    start <b>3</b> \
-    sleep <b>5</b> \
-    exec <b>1</b> "./benchmark/xpn-mpi-mdtest.sh" \
-    stop
-</pre>
+  </html>
+   
+  ```bash
+  : 1. To start 3 containers,
+  : 2. sleep 5 seconds,
+  : 3. work from container 1,
+  : 4. and stop all containers
+  
+  ./xpn_docker.sh \
+      start 3 \
+      sleep 5 \
+      exec 1 "./benchmark/xpn-mpi-mdtest.sh" \
+      stop
+  ```
+
+  <html>
   </td>
   <td>
-<pre>
-: 1. To start <b>3</b> containers,
-: 2. sleep 5 seconds,
-: 3. work from container <b>1</b>,
-: 4. and stop all containers
-<br>
-./xpn_docker.sh \
-    start <b>3</b> \
-    sleep <b>5</b> \
-    exec <b>1</b> "./benchmark/xpn-mpi-ior.sh" \
-    stop
-</pre>
+  </html>
+   
+  ```bash
+  : 1. To start 3 containers,
+  : 2. sleep 5 seconds,
+  : 3. work from container 1,
+  : 4. and stop all containers
+  
+  ./xpn_docker.sh \
+      start 3 \
+      sleep 5 \
+      exec 1 "./benchmark/xpn-mpi-ior.sh" \
+      stop
+  ```
+    
+  <html>
   </td>
   </tr>
- </table>
-</html>
+  </table>
+  </html>
 
 
-* Examples of Ad-Hoc XPN with Apache Spark:
+### Examples of Ad-Hoc XPN with Apache Spark
 
 <html>
  <table>
   <tr>
   <td>
-Apache Spark
-<img width="650" height="1">
+  Word count <img width="650" height="1">
   </td>
   </tr>
   <tr>
   <td>
-<pre>
-: 1. To start <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh sleep 5
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh exec <b>1</b> <b>./spark/quixote-local.sh</b>
-./xpn_docker.sh exec <b>1</b> <b>./spark/quixote-xpn.sh</b>
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
+  </html>
+  
+  ```bash
+  : 1. To start 3 containers
+  ./xpn_docker.sh start 3
+  ./xpn_docker.sh sleep 5
+
+  : 2. Work from container 1
+  ./xpn_docker.sh exec 1 ./spark/quixote-local.sh
+  ./xpn_docker.sh exec 1 ./spark/quixote-xpn.sh
+
+  : 3. Stop all containers
+  ./xpn_docker.sh stop
+  ```
+  
+  <html>
   </td>
   </tr>
  </table>
@@ -158,8 +178,9 @@ Apache Spark
 
 ## Using xpn-docker
 
-<html>
- <table>
+* Summary:
+  <html>
+  <table>
   <tr>
   <th colspan="2">Action</th>
   <th>Command</th>
@@ -218,14 +239,14 @@ Apache Spark
   </td>
   </tr>
  
- </table>
-</html>
+  </table>
+  </html>
 
-**Please beware of**:
-  * Any modification outside the "/work" directory will be discarded on container stopping.
-  * Please make a backup of your work "frequently" (just in case).
-  * You might need to use "sudo" before ./xpn_docker.sh if your user doesn't belong to the docker group
-    * It could be solved by using "sudo usermod -aG docker ${USER}"
+* **Please beware of**:
+   * Any modification outside the "/work" directory will be discarded on container stopping.
+   * Please make a backup of your work "frequently" (just in case).
+   * You might need to use "sudo" before ./xpn_docker.sh if your user doesn't belong to the docker group
+     * It could be solved by using "sudo usermod -aG docker ${USER}"
 
 
 ## Authors
