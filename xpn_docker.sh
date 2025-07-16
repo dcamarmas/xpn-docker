@@ -142,7 +142,7 @@ xpn_docker_swarm_create ()
 	    echo ": The machinefile name is empty."
 	    echo ": * Please see './xpn_docker.sh help' for more information."
 	    echo ""
-	    exit
+	    e meet.google.com/zht-bqag-mrrxit
 	fi
 	if [ ! -f $MACHINE_FILE ]; then
 	    echo ": The machinefile '$MACHINE_FILE' does not exist."
@@ -210,7 +210,7 @@ xpn_docker_build ()
 	# Check params
 	if [ ! -f docker/dockerfile ]; then
 	    echo ": The docker/dockerfile file is not found."
-	    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
+	    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
 	    echo ""
 	    exit
 	fi
@@ -253,7 +253,7 @@ xpn_docker_start ()
 		HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME up -d --scale node=$N_ELTOS
 		if [ $? -gt 0 ]; then
 		    echo ": The docker compose command failed to spin up containers."
-		    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
+		    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
 		    echo ""
 		    exit
 		fi
@@ -309,7 +309,7 @@ xpn_docker_stop ()
 	     HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME down
 	     if [ $? -gt 0 ]; then
 		 echo ": The 'docker compose' command failed to stop containers."
-		 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
+		 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
 		 echo ""
 		 exit
 	     fi
@@ -320,7 +320,7 @@ xpn_docker_stop ()
 	     docker service rm xpn_docker_node
 	     if [ $? -gt 0 ]; then
 		 echo ": The 'docker service' command failed to stop containers."
-		 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
+		 echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
 		 echo ""
 		 exit
 	     fi
@@ -329,6 +329,58 @@ xpn_docker_stop ()
 
 	# Remove container cluster files...
 	xpn_docker_machines_remove
+}
+
+xpn_docker_bash ()
+{
+	# Get parameters
+	CO_ID=$1
+	CO_NC=$2
+
+	# Check params
+	if [ $CO_ID -lt 1 ]; then
+		echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
+		shift
+		continue
+	fi
+	if [ $CO_ID -gt $CO_NC ]; then
+		echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
+		shift
+		continue
+	fi
+
+	# get current session mode
+	MODE=""
+	if [ -f .xpn_docker_worksession ]; then
+	     MODE=$(cat .xpn_docker_worksession)
+	fi
+
+	# get current session mode
+	if [ "$MODE" == "SINGLE_NODE" ]; then
+
+	     # Bash on container...
+	     CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
+	     echo "Executing /bin/bash on container $CO_NAME with container id: $CO_ID ..."
+	     docker exec -it --user lab $CO_NAME /bin/bash -l
+
+	fi
+	if [ "$MODE" == "MULTI_NODE" ]; then
+
+	     # ssh to container...
+	     CO_IP=$(head -$1 machines_mpi | tail -1)
+             CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -1)
+	     if [ "x$CO_NAME" == "x" ]; then
+                  echo ": There is not a running xpn container on this node."
+	          echo ": * Please swarm-create first."
+	          echo ": * Please see ./xpn_docker.sh help for more information."
+	          echo ""
+                  exit
+	     fi
+
+	     echo "Executing /bin/bash on container $CO_NAME ..."
+	     docker container exec -it $CO_NAME /usr/bin/ssh $CO_IP
+
+	fi
 }
 
 
@@ -411,37 +463,22 @@ do
              ;;
 
              bash)
-                # Get parameters
-                shift
-                CO_ID=$1
-                CO_NC=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | wc -l)
+		# Get parameters
+		shift
+		CO_ID=$1
+		CO_NC=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | wc -l)
 
-                # Check params
-                if [ $CO_ID -lt 1 ]; then
-                        echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
-                        shift
-                        continue
-                fi
-                if [ $CO_ID -gt $CO_NC ]; then
-                        echo "ERROR: Container ID $CO_ID out of range (1...$CO_NC)"
-                        shift
-                        continue
-                fi
-
-                # Bash on container...
-                echo "Executing /bin/bash on container $CO_ID..."
-                CO_NAME=$(docker ps -f name=$DOCKER_PREFIX_NAME -q | head -$CO_ID | tail -1)
-                # echo "container name $CO_NAME"
-                docker exec -it --user lab $CO_NAME /bin/bash -l
+                xpn_docker_bash ${CO_ID} ${CO_NC}
              ;;
 
              kill)
                 # Stopping containers
                 echo "Stopping containers..."
+
                 HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -f docker/dockercompose.yml -p $DOCKER_PREFIX_NAME kill
                 if [ $? -gt 0 ]; then
                     echo ": The docker compose command failed to stop containers."
-                    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git?."
+                    echo ": * Did you execute git clone https://github.com/xpn-arcos/xpn-docker.git ?."
                     echo ""
                     exit
                 fi
