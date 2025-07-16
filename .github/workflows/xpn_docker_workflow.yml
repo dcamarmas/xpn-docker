@@ -25,11 +25,6 @@ jobs:
         large-packages: true
         docker-images: false
         swap-storage: true
-    - uses: pyTooling/download-artifact@v4
-      with:
-        name: github-pages
-        tarball-name: artifact.tar
-        path: .
     - name: Set up QEMU        
       uses: docker/setup-qemu-action@v3
       with:
