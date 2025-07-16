@@ -1,4 +1,4 @@
-# Expand Docker (v3.2)
+# Expand Docker v3.2
 
 
 ## Contents
@@ -112,10 +112,10 @@ IOR
   : 4. and stop all containers
   
   ./xpn_docker.sh \
-      start 3 \
-      sleep 5 \
-      exec 1 "./benchmark/xpn-mpi-mdtest.sh" \
-      stop
+     start 3 \
+     sleep 5 \
+     exec 1 "./benchmark/xpn-mpi-mdtest.sh" \
+     stop
   ```
 
   <html>
@@ -130,10 +130,10 @@ IOR
   : 4. and stop all containers
   
   ./xpn_docker.sh \
-      start 3 \
-      sleep 5 \
-      exec 1 "./benchmark/xpn-mpi-ior.sh" \
-      stop
+     start 3 \
+     sleep 5 \
+     exec 1 "./benchmark/xpn-mpi-ior.sh" \
+     stop
   ```
     
   <html>
