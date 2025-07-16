@@ -1,20 +1,129 @@
-# Expand Docker (v3.2)
+# Expand Docker v3.2
 
 
 ## Contents
 
- * [Some use cases with xpn-docker](https://github.com/xpn-arcos/xpn-docker/#some-use-cases-with-xpn-docker)
- * [Using xpn-docker](https://github.com/xpn-arcos/xpn-docker/#using-xpn-docker)
+ * [Summary of using xpn-docker](https://github.com/xpn-arcos/xpn-docker/#using-xpn-docker)
+ * [Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#examples-of-benchmarks-with-xpn-ad-hoc)
+ * [Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#examples-using-xpn-ad-hoc)
+ * [Examples of Ad-Hoc XPN with Apache Spark](https://github.com/xpn-arcos/xpn-docker/#examples-of-ad-hoc-xpn-with-apache-spark)
 
 
-## Some use cases with xpn-docker
+## Using xpn-docker
 
-  * Examples using XPN Ad-Hoc:
+ * Summary:
+   <html>
+   <table>
+   <tr>
+   <th colspan="2">Action</th>
+   <th>Command</th>
+   </tr>
 
-    * Expand (fuse)
+   <tr>
+   <td colspan="2"> First time + "each time ./docker/dockerfile is updated"  </td>
+   <td><code>./xpn_docker.sh build</code>
+   </td>
+   </tr>
+
+   <tr>
+   <td rowspan="4">
+   Work session
+   </td>
+   <td colspan="1"> To spin up <b>3</b> containers </td>
+   <td><code>./xpn_docker.sh start <b>3</b></code>
+   </td>
+   </tr>
+
+   <tr>
+   <td colspan="1"> To get into container <b>1</b>  </td>
+   <td><code> ./xpn_docker.sh bash <b>1</b></code>
+   </td>
+   </tr>
+
+   <tr>
+   <td colspan="1"> To exit from container </td>
+   <td><code>exit</code>  </td>
+   </tr>
+
+   <tr>
+   <td colspan="1"> To spin down all containers </td>
+   <td><code>./xpn_docker.sh stop</code>
+   </td>
+   </tr>
+
+   <tr>
+   <td rowspan="2">
+   Options for debugging
+   </td>
+   <td>  
+   To check running containers
+   </td>
+   <td>
+   <code>./xpn_docker.sh status</code>
+   </td>
+   </tr>
+
+   <tr>
+   <td>  
+   To get the containers internal IP addresses
+   </td>
+   <td>
+   <code>./xpn_docker.sh network</code>
+   </td>
+   </tr>
+ 
+   </table>
+   </html>
+
+
+ * **Please beware of**:
+   * Any modification outside the "/work" directory will be discarded on container stopping.
+   * Please make a backup of your work "frequently" (just in case).
+   * You might need to use "sudo" before ./xpn_docker.sh if your user doesn't belong to the docker group
+     * It could be solved by using "sudo usermod -aG docker ${USER}"
+
+
+## Examples of benchmarks with XPN Ad-Hoc
+
+   * IOR <img width="325" height="1">
 
       ```bash
-      : 1. To start <b>3</b> containers
+      : 1. To start 3 containers,
+      : 2. sleep 5 seconds,
+      : 3. work from container 1,
+      : 4. and stop all containers
+      
+      ./xpn_docker.sh \
+          start 3 \
+          sleep 5 \
+          exec  1 "./benchmark/xpn-mpi-ior.sh" \
+          stop
+      ```
+      
+   * MDtest <img width="325" height="1">
+
+      ```bash
+      : 1. To start 3 containers,
+      : 2. sleep 5 seconds,
+      : 3. work from container 1,
+      : 4. and stop all containers
+      
+      ./xpn_docker.sh \
+          start 3 \
+          sleep 5 \
+          exec  1 "./benchmark/xpn-mpi-mdtest.sh" \
+          stop
+      ```
+
+
+
+
+## Examples using XPN Ad-Hoc
+
+  * Expand (fuse)
+
+      ```bash
+      : 1. To start 3 containers
       ./xpn_docker.sh start 3
       ./xpn_docker.sh status
 
@@ -27,10 +136,10 @@
       ./xpn_docker.sh stop
       ```
 
-    * Expand (bypass)
+  * Expand (bypass)
 
       ```bash
-      : 1. To start <b>3</b> containers
+      : 1. To start 3 containers
       ./xpn_docker.sh start 3
       ./xpn_docker.sh status
 
@@ -43,10 +152,10 @@
       ./xpn_docker.sh stop
       ```
 
-    * Expand (native)
+  * Expand (native)
 
       ```bash
-      : 1. To start <b>3</b> containers
+      : 1. To start 3 containers
       ./xpn_docker.sh start 3
       ./xpn_docker.sh status
 
@@ -60,212 +169,24 @@
       ```
 
 
-* Examples using XPN Ad-Hoc:
 
-<html>
- <table>
+##  Examples of Ad-Hoc XPN with Apache Spark
+      
+   * Word count with Apache Spark <img width="650" height="1">
 
-  <tr>
-  <td>
-Expand (fuse)
-  </td>
-  <td>
-Expand (bypass)
-  </td>
-  <td>
-Expand (native)
-  </td>
-  </tr>
+      ```bash
+      : 1. To start 3 containers
+      ./xpn_docker.sh start 3
+      ./xpn_docker.sh sleep 5
 
-  <tr>
-  <td>
-<pre>
-</pre>
-  </td>
-  <td>
-<pre>
-: 1. Spin up <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh status
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh bash <b>1</b>
-<b>./test/xpn-mpi-bypass.sh</b>
-exit
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
-  </td>
-  <td>
-<pre>
-: 1. Spin up <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh status
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh bash <b>1</b>
-<b>./test/xpn-mpi-native.sh</b>
-exit
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
-  </td>
-  </tr>
+      : 2. Work from container 1
+      ./xpn_docker.sh exec 1 ./spark/quixote-local.sh
+      ./xpn_docker.sh exec 1 ./spark/quixote-xpn.sh
 
- </table>
-</html>
-
-
-* Examples of benchmarks with XPN Ad-Hoc:
-
-<html>
- <table>
-  <tr>
-  <td>
-MDtest
-<img width="325" height="1">
-  </td>
-  <td>
-IOR
-<img width="325" height="1">
-  </td>
-  </tr>
-  <tr>
-  <td>
-<pre>
-: 1. To start <b>3</b> containers,
-: 2. sleep 5 seconds,
-: 3. work from container <b>1</b>,
-: 4. and stop all containers
-<br>
-./xpn_docker.sh \
-    start <b>3</b> \
-    sleep <b>5</b> \
-    exec <b>1</b> "./benchmark/xpn-mpi-mdtest.sh" \
-    stop
-</pre>
-  </td>
-  <td>
-<pre>
-: 1. To start <b>3</b> containers,
-: 2. sleep 5 seconds,
-: 3. work from container <b>1</b>,
-: 4. and stop all containers
-<br>
-./xpn_docker.sh \
-    start <b>3</b> \
-    sleep <b>5</b> \
-    exec <b>1</b> "./benchmark/xpn-mpi-ior.sh" \
-    stop
-</pre>
-  </td>
-  </tr>
- </table>
-</html>
-
-
-* Examples of Ad-Hoc XPN with Apache Spark:
-
-<html>
- <table>
-  <tr>
-  <td>
-Apache Spark
-<img width="650" height="1">
-  </td>
-  </tr>
-  <tr>
-  <td>
-<pre>
-: 1. To start <b>3</b> containers
-./xpn_docker.sh start <b>3</b>
-./xpn_docker.sh sleep 5
-<br>
-: 2. Work from container <b>1</b>
-./xpn_docker.sh exec <b>1</b> <b>./spark/quixote-local.sh</b>
-./xpn_docker.sh exec <b>1</b> <b>./spark/quixote-xpn.sh</b>
-<br>
-: 3. Stop all containers
-./xpn_docker.sh stop
-</pre>
-  </td>
-  </tr>
- </table>
-</html>
-
-
-## Using xpn-docker
-
-<html>
- <table>
-  <tr>
-  <th colspan="2">Action</th>
-  <th>Command</th>
-  </tr>
-
-  <tr>
-  <td colspan="2"> First time + "each time ./docker/dockerfile is updated"  </td>
-  <td><code>./xpn_docker.sh build</code>
-  </td>
-  </tr>
-
-  <tr>
-  <td rowspan="4">
-  Work session
-  </td>
-  <td colspan="1"> To spin up <b>3</b> containers </td>
-  <td><code>./xpn_docker.sh start <b>3</b></code>
-  </td>
-  </tr>
-
-  <tr>
-  <td colspan="1"> To get into container <b>1</b>  </td>
-  <td><code> ./xpn_docker.sh bash <b>1</b></code>
-  </td>
-  </tr>
-
-  <tr>
-  <td colspan="1"> To exit from container </td>
-  <td><code>exit</code>  </td>
-  </tr>
-
-  <tr>
-  <td colspan="1"> To spin down all containers </td>
-  <td><code>./xpn_docker.sh stop</code>
-  </td>
-  </tr>
-
-  <tr>
-  <td rowspan="2">
-  Options for debugging
-  </td>
-  <td>  
-  To check running containers
-  </td>
-  <td>
-  <code>./xpn_docker.sh status</code>
-  </td>
-  </tr>
-
-  <tr>
-  <td>  
-  To get the containers internal IP addresses
-  </td>
-  <td>
-  <code>./xpn_docker.sh network</code>
-  </td>
-  </tr>
- 
- </table>
-</html>
-
-**Please beware of**:
-  * Any modification outside the "/work" directory will be discarded on container stopping.
-  * Please make a backup of your work "frequently" (just in case).
-  * You might need to use "sudo" before ./xpn_docker.sh if your user doesn't belong to the docker group
-    * It could be solved by using "sudo usermod -aG docker ${USER}"
+      : 3. Stop all containers
+      ./xpn_docker.sh stop
+      ```
+      
 
 
 ## Authors
