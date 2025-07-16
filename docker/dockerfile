@@ -24,11 +24,13 @@ RUN echo 'lab ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 RUN echo 'lab:lab' | sudo chpasswd
 
 # C) Install SSH (from package)
+USER root
 COPY scripts/pkg-install/*.sh /tmp/
  RUN  chmod a+x /tmp/*.sh
- USER lab
- RUN  sudo /tmp/ssh.sh
- RUN  sudo chown -R lab:lab /home/lab
+ RUN  /tmp/ssh.sh
+ RUN  chown -R lab:lab /home/lab
+USER lab
+ RUN  /tmp/lab_init.sh
 
 # D) Install MPICH and XPN (from source)
 USER lab
