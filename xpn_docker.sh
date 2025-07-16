@@ -142,7 +142,7 @@ xpn_docker_swarm_create ()
 	    echo ": The machinefile name is empty."
 	    echo ": * Please see './xpn_docker.sh help' for more information."
 	    echo ""
-	    e meet.google.com/zht-bqag-mrrxit
+	    exit
 	fi
 	if [ ! -f $MACHINE_FILE ]; then
 	    echo ": The machinefile '$MACHINE_FILE' does not exist."
