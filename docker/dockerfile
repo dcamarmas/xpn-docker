@@ -50,6 +50,7 @@ ADD lab-home/spark        /home/lab/spark
 ADD lab-home/benchmark    /home/lab/benchmark
 ADD lab-home/replication  /home/lab/replication
 RUN sudo chmod a+x /home/lab/*/*.sh
+RUN sudo chown -R lab:lab /home/lab
 WORKDIR "/home/lab"
 
 # Container start-up
@@ -61,4 +62,3 @@ RUN  rm -fr /tmp/*.sh
 
 EXPOSE 22
 CMD ["/srv/dockerstart.sh"]
-
