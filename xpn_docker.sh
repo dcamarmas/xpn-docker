@@ -38,9 +38,9 @@ xpn_docker_help_c ()
         echo "           $0 build"
         echo "        * Multi-node:"
         echo "           $0 build"
-        echo "           $0 save"
+        echo "           $0 image-save"
         echo "           Change other compute nodes and load the image:"
-        echo "           $0 load"
+        echo "           $0 image-load"
         echo ""
         echo "  :: Working with xpn-docker:"
         echo "     1) Starting the containers:"
@@ -238,8 +238,8 @@ xpn_docker_save ()
 xpn_docker_load ()
 {
    # Check params
-   if [ ! -f xpn_docker_v2.tgz ]; then
-      echo ": The xpn_docker_v2.tgz file is not found."
+   if [ ! -f xpn_docker.tgz ]; then
+      echo ": The xpn_docker.tgz file is not found."
       echo ": * Please see ./xpn_docker.sh help for more information."
       echo ""
       exit
@@ -410,7 +410,7 @@ xpn_docker_bash ()
              fi
 
              echo "Executing /bin/bash on container $CO_NAME ..."
-             docker container exec -it $CO_NAME /usr/bin/ssh $CO_IP
+             docker container exec -it --user lab $CO_NAME /usr/bin/ssh $CO_IP
 
         fi
 }

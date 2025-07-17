@@ -15,6 +15,15 @@ services:
       - type: bind
         source: ..
         target: /shared
+      - type: bind
+        source: /tmp
+        target: /local_storage
+      - type: bind
+        source: /dev/shm
+        target: /shm_storage
+      - type: bind
+        source: ..
+        target: /backend_storage
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - backend
