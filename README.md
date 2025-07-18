@@ -15,8 +15,18 @@
 
 ## 1. Some xpn-docker use cases: multiple containers on single node
 
-### 1.1 Example of using Expand with native API, with FUSE, and with LD_PRELOAD (bypass)
+### 1.1 Example of using Expand with native API, with LD_PRELOAD (bypass), and with FUSE
 
+  The first time or each time dockerfile is updated, build image with ```./xpn_docker.sh build``` <br>
+  Then, the general steps are:
+   1. Starting 3 containers
+   2. Then, do some work from container 1
+      * Bash on container 1
+      * Execute example with Expand native access or access by using FUSE or by using LD_PRELOAD
+      * Exit from container 1
+   4. Stopping all containers
+
+   <br>
    <html>
    <table>
    <tr>
@@ -41,7 +51,8 @@
 
  : Step 2. 
  ./xpn_docker.sh bash 1
- ./test/xpn-mpi-fuse.sh
+ cd ./test
+ ./xpn-mpi-fuse.sh
  exit
 
  : Step 3. 
@@ -60,7 +71,8 @@
 
  : Step 2. 
  ./xpn_docker.sh bash 1
- ./test/xpn-mpi-bypass.sh
+ cd ./test
+ ./xpn-mpi-bypass.sh
  exit
 
  : Step 3. 
@@ -79,7 +91,8 @@
 
  : Step 2. 
  ./xpn_docker.sh bash 1
- ./test/xpn-mpi-native.sh
+ cd ./test
+ ./xpn-mpi-native.sh
  exit
 
  : Step 3. 
@@ -91,15 +104,6 @@
   </tr>
   </table>
   </html>
-
-
-  The steps are:
-  1. First, starting 3 containers
-  2. Then, do some work from container 1
-     * Bash on container 1
-     * Execute example with Expand native access or access by using FUSE or by using LD_PRELOAD
-     * Exit from container 1
-  4. Finally, stop all containers
 
 
 ### 1.2 Examples of benchmarks with XPN Ad-Hoc
@@ -220,7 +224,9 @@ IOR
     ./xpn-docker.sh start $NC
 
     : Step 3: Doing execution
+    ./xpn_docker.sh bash 1
     ./benchmark/xpn-mpi-native.sh
+    exit
     
     : Step 4: Stopping containers (undoing 2)
     ./xpn-docker.sh stop
@@ -241,8 +247,21 @@ IOR
   </tr>
 
   <tr>
-  <td colspan="2"> First time + "each time ./docker/dockerfile is updated"  </td>
+  <td rowspan="3">
+  Container image
+  </td>
+  <td colspan="1"> First time + when dockerfile is updated </td>
   <td><code>./xpn_docker.sh build</code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> Save image  </td>
+  <td><code> ./xpn_docker.sh image-save</code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> Load image  </td>
+  <td><code> ./xpn_docker.sh image-load</code>
   </td>
   </tr>
 
@@ -283,7 +302,6 @@ IOR
   <code>./xpn_docker.sh status</code>
   </td>
   </tr>
-
   <tr>
   <td>  
   To get the containers internal IP addresses
@@ -292,7 +310,28 @@ IOR
   <code>./xpn_docker.sh network</code>
   </td>
   </tr>
- 
+
+  <tr>
+  <td rowspan="2">
+  Options for multiple nodes
+  </td>
+  <td>  
+  Starting docker swarm
+  </td>
+  <td>
+  <code>./xpn-docker.sh swarm-create machinefile</code>
+  </td>
+  </tr>
+  <tr>
+  <td>  
+  Stopping docker swarm
+  </td>
+  <td>
+  <code>./xpn-docker.sh swarm-destroy</code>
+  </td>
+  </tr>
+
+
   </table>
   </html>
 
