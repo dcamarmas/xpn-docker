@@ -3,28 +3,144 @@
 
 ## Contents
 
- * [1. Some xpn-docker use cases: multiple containers on single node](https://github.com/xpn-arcos/xpn-docker/#1-some-xpn-docker-use-cases-multiple-containers-on-single-node)
-   * [1.1 Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#11-examples-using-xpn-ad-hoc)
-   * [1.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#12-examples-of-benchmarks-with-xpn-ad-hoc)
-   * [1.3 Examples of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/#13-examples-of-ad-hoc-xpn-with-apache-spark)
- * [2. Some xpn-docker use cases: multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/#2-some-xpn-docker-use-cases-multiple-containers-on-multiple-nodes)
-   * [2.1 To build and to distribute the container image in multiple nodes](https://github.com/xpn-arcos/xpn-docker/#21-to-build-and-to-distribute-the-container-image-in-multiple-nodes)
-   * [2.2 Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#22-examples-using-xpn-ad-hoc)
- * [3. Summary of using xpn-docker](https://github.com/xpn-arcos/xpn-docker/#2-summary-of-using-xpn-docker)
+ * [1. Summary of using xpn-docker](https://github.com/xpn-arcos/xpn-docker/#1-summary-of-using-xpn-docker)
+ * [2. Build the container image](https://github.com/xpn-arcos/xpn-docker/#2-build-the-container-image)
+ * [3. Some xpn-docker use cases](https://github.com/xpn-arcos/xpn-docker/#3-some-xpn-docker-use-cases)
+   * [3.1 Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#31-examples-using-xpn-ad-hoc)
+   * [3.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#32-examples-of-benchmarks-with-xpn-ad-hoc)
+   * [3.3 Examples of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/#33-examples-of-ad-hoc-xpn-with-apache-spark)
+ * [4. Multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/#4-multiple-containers-on-multiple-nodes)
 
 
-## 1. Some xpn-docker use cases: multiple containers on single node
+## 1. Summary of using xpn-docker
 
-### 1.1 Example of using Expand with native API, with LD_PRELOAD (bypass), and with FUSE
+* Summary:
+  <html>
+  <table>
+  <tr>
+  <th colspan="2">Action</th>
+  <th>Command</th>
+  </tr>
 
-  The first time or each time dockerfile is updated, build image with ```./xpn_docker.sh build``` <br>
-  Then, the general steps are:
-   1. Starting 3 containers
-   2. Then, do some work from container 1
-      * Bash on container 1
-      * Execute example with Expand native access or access by using FUSE or by using LD_PRELOAD
-      * Exit from container 1
-   4. Stopping all containers
+  <tr>
+  <td rowspan="3">
+  Container image
+  </td>
+  <td colspan="1"> First time + when dockerfile is updated </td>
+  <td><code>./xpn_docker.sh build</code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> Save image  </td>
+  <td><code> ./xpn_docker.sh image-save</code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> Load image  </td>
+  <td><code> ./xpn_docker.sh image-load</code>
+  </td>
+  </tr>
+
+  <tr>
+  <td rowspan="2">
+  Options for multiple nodes
+  </td>
+  <td>  
+  Starting docker swarm
+  </td>
+  <td>
+  <code>./xpn-docker.sh swarm-create machinefile</code>
+  </td>
+  </tr>
+  <tr>
+  <td>  
+  Stopping docker swarm
+  </td>
+  <td>
+  <code>./xpn-docker.sh swarm-destroy</code>
+  </td>
+  </tr>
+
+  <tr>
+  <td rowspan="4">
+  Work session
+  </td>
+  <td colspan="1"> To spin up <b>3</b> containers </td>
+  <td><code>./xpn_docker.sh start <b>3</b></code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> To get into container <b>1</b>  </td>
+  <td><code> ./xpn_docker.sh bash <b>1</b></code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> To exit from container </td>
+  <td><code>exit</code>  </td>
+  </tr>
+  <tr>
+  <td colspan="1"> To spin down all containers </td>
+  <td><code>./xpn_docker.sh stop</code>
+  </td>
+  </tr>
+
+  <tr>
+  <td rowspan="2">
+  Options for debugging
+  </td>
+  <td>  
+  To check running containers
+  </td>
+  <td>
+  <code>./xpn_docker.sh status</code>
+  </td>
+  </tr>
+  <tr>
+  <td>  
+  To get the containers internal IP addresses
+  </td>
+  <td>
+  <code>./xpn_docker.sh network</code>
+  </td>
+  </tr>
+
+  </table>
+  </html>
+
+* **Please beware of**:
+   * Any modification outside the "/work" directory will be discarded on container stopping.
+   * Please make a backup of your work "frequently" (just in case).
+   * You might need to use "sudo" before ./xpn_docker.sh if your user doesn't belong to the docker group
+     * It could be solved by using "sudo usermod -aG docker ${USER}"
+
+
+
+## 2. Build the container image
+
+The first time xpn-docker is deployed or when the ```docker/dockerfile``` is updated we need to build the container image.
+
+  * To build the container image for a single node:
+       ```bash
+       ./xpn-docker.sh clean-build
+       ```
+
+  * To build and distribute the container image to multiple nodes:
+    * Build and save the image to the ```xpn_docker.tgz``` file by using:
+        ```bash
+       ./xpn-docker.sh clean-build
+        ./xpn-docker.sh image-save
+        ```
+    2. Copy ```xpn_docker.tgz``` to other nodes, and load this file:
+        ```bash
+        scp xpn_docker.tgz  node-x
+        ssh node-x ./xpn-docker.sh image-load
+        ```
+
+
+
+## 3. Some xpn-docker use cases
+
+### 3.1 Example of using Expand with native API, with LD_PRELOAD (bypass), and with FUSE
 
    <br>
    <html>
@@ -106,7 +222,16 @@
   </html>
 
 
-### 1.2 Examples of benchmarks with XPN Ad-Hoc
+  Then, the general steps are:
+   1. Starting 3 containers
+   2. Then, do some work from container 1
+      * Bash on container 1
+      * Execute example with Expand native access or access by using FUSE or by using LD_PRELOAD
+      * Exit from container 1
+   4. Stopping all containers
+
+
+### 3.2 Examples of benchmarks with XPN Ad-Hoc
 
   <html>
   <table>
@@ -162,7 +287,7 @@ IOR
   </html>
 
 
-### 1.3 Examples of Ad-Hoc XPN with Apache Spark
+### 3.3 Examples of Ad-Hoc XPN with Apache Spark
 
 <html>
  <table>
@@ -195,151 +320,29 @@ IOR
 </html>
 
 
-## 2. xpn-docker use case: multiple containers on multiple nodes
+## 4. Multiple containers on multiple nodes
 
-### 2.1 To build and to distribute the container image in multiple nodes
-
-   The first time or when docker/dockerfile is updated:
-   1. On one node: build image node and save the image:
-       ```bash
-       ./xpn-docker.sh clean-build
-       ./xpn-docker.sh image-save
-       ```
-   2. On the other nodes: copy the image and load the image (node-x in this example):
-       ```bash
-       scp xpn_docker.tgz  node-x
-       ssh node-x ./xpn-docker.sh image-load
-       ```
-
-
-### 2.2 Example of using Expand with native API 
-
-   General steps are:
+   The general steps are:
    ```bash
-    : Step 1: Starting docker swarm
-    ./xpn-docker.sh swarm-create machinefile
+   : Step 1: Starting docker swarm
+   ./xpn-docker.sh swarm-create machinefile
 
-    : Step 2: Starting containers
-    NC=$(wc machines | awk '{print $1}')
-    ./xpn-docker.sh start $NC
+        : Step 2: Starting containers
+        NC=$(wc machines | awk '{print $1}')
+        ./xpn-docker.sh start $NC
 
-    : Step 3: Doing execution
-    ./xpn_docker.sh bash 1
-    ./benchmark/xpn-mpi-native.sh
-    exit
+             : Step 3: Doing execution
+             ./xpn_docker.sh bash 1
+             ./benchmark/xpn-mpi-native.sh
+             exit
     
-    : Step 4: Stopping containers (undoing 2)
-    ./xpn-docker.sh stop
+        : Step 4: Stopping containers (undoing 2)
+        ./xpn-docker.sh stop
 
-    : Step 5: Stopping docker swarm (undoing 1)
-    ./xpn-docker.sh swarm-destroy
+   : Step 5: Stopping docker swarm (undoing 1)
+   ./xpn-docker.sh swarm-destroy
    ```
 
-
-## 3. Summary of using xpn-docker
-
-* Summary:
-  <html>
-  <table>
-  <tr>
-  <th colspan="2">Action</th>
-  <th>Command</th>
-  </tr>
-
-  <tr>
-  <td rowspan="3">
-  Container image
-  </td>
-  <td colspan="1"> First time + when dockerfile is updated </td>
-  <td><code>./xpn_docker.sh build</code>
-  </td>
-  </tr>
-  <tr>
-  <td colspan="1"> Save image  </td>
-  <td><code> ./xpn_docker.sh image-save</code>
-  </td>
-  </tr>
-  <tr>
-  <td colspan="1"> Load image  </td>
-  <td><code> ./xpn_docker.sh image-load</code>
-  </td>
-  </tr>
-
-  <tr>
-  <td rowspan="4">
-  Work session
-  </td>
-  <td colspan="1"> To spin up <b>3</b> containers </td>
-  <td><code>./xpn_docker.sh start <b>3</b></code>
-  </td>
-  </tr>
-
-  <tr>
-  <td colspan="1"> To get into container <b>1</b>  </td>
-  <td><code> ./xpn_docker.sh bash <b>1</b></code>
-  </td>
-  </tr>
-
-  <tr>
-  <td colspan="1"> To exit from container </td>
-  <td><code>exit</code>  </td>
-  </tr>
-
-  <tr>
-  <td colspan="1"> To spin down all containers </td>
-  <td><code>./xpn_docker.sh stop</code>
-  </td>
-  </tr>
-
-  <tr>
-  <td rowspan="2">
-  Options for debugging
-  </td>
-  <td>  
-  To check running containers
-  </td>
-  <td>
-  <code>./xpn_docker.sh status</code>
-  </td>
-  </tr>
-  <tr>
-  <td>  
-  To get the containers internal IP addresses
-  </td>
-  <td>
-  <code>./xpn_docker.sh network</code>
-  </td>
-  </tr>
-
-  <tr>
-  <td rowspan="2">
-  Options for multiple nodes
-  </td>
-  <td>  
-  Starting docker swarm
-  </td>
-  <td>
-  <code>./xpn-docker.sh swarm-create machinefile</code>
-  </td>
-  </tr>
-  <tr>
-  <td>  
-  Stopping docker swarm
-  </td>
-  <td>
-  <code>./xpn-docker.sh swarm-destroy</code>
-  </td>
-  </tr>
-
-
-  </table>
-  </html>
-
-* **Please beware of**:
-   * Any modification outside the "/work" directory will be discarded on container stopping.
-   * Please make a backup of your work "frequently" (just in case).
-   * You might need to use "sudo" before ./xpn_docker.sh if your user doesn't belong to the docker group
-     * It could be solved by using "sudo usermod -aG docker ${USER}"
 
 
 ## Authors
