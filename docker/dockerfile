@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive
  RUN mkdir -p /tmp/pkg
 COPY scripts/pkg-install/*.sh /tmp/pkg
  RUN chmod a+x /tmp/pkg/*.sh
- RUN /tmp/pkg/run_essential.sh
+ RUN /tmp/pkg/run_all.sh
 
 # B) Setup lab user
 RUN getent group  "$GID" > /dev/null || addgroup --gid $GID lab
@@ -21,13 +21,9 @@ RUN getent passwd "$UID" > /dev/null && export UNAME=$(getent passwd "$UID" | cu
 RUN echo 'lab ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 RUN echo 'lab:lab' | sudo chpasswd
 
-RUN mkdir -p  /home/lab/bin  /home/lab/test  /home/lab/replication  /home/lab/spark  /home/lab/benchmark
-ADD lab-home/bin          /home/lab/bin
-ADD lab-home/test         /home/lab/test
-ADD lab-home/spark        /home/lab/spark
-ADD lab-home/benchmark    /home/lab/benchmark
-ADD lab-home/replication  /home/lab/replication
-RUN chown -R lab:lab      /home/lab
+ADD lab-home             /tmp/home-lab/
+RUN mv /tmp/home-lab/*   /home/lab
+RUN chown -R lab:lab     /home/lab
 
 # C) OpenSSH: keygen
 USER lab

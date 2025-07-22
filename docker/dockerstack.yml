@@ -27,6 +27,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - backend
+    environment:
+      - HOST_UID=${HOST_UID}
+      - HOST_GID=${HOST_GID}
 
 networks:
   backend:
