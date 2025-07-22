@@ -24,7 +24,7 @@
 xpn_docker_welcome ()
 {
         echo ""
-        echo "  XPN-Docker v3.2"
+        echo "  XPN-Docker v3.3"
         echo " -----------------"
         echo ""
 }
@@ -303,7 +303,7 @@ xpn_docker_start ()
         if [ "$MODE" == "MULTI_NODE" ]; then
 
                 # Start container cluster (multi node)
-                docker stack deploy --compose-file docker/dockerstack.yml $DOCKER_PREFIX_NAME
+                HOST_UID=$HOST_UID_VALUE HOST_GID=$HOST_GID_VALUE docker stack deploy --compose-file docker/dockerstack.yml $DOCKER_PREFIX_NAME
                 if [ $? -gt 0 ]; then
                     echo ": The docker stack deploy command failed to spin up containers."
                     echo ""

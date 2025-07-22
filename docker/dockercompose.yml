@@ -26,6 +26,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - b0
+    environment:
+      - HOST_UID=${HOST_UID}
+      - HOST_GID=${HOST_GID}
     privileged: true
     cap_add:
       - ALL
