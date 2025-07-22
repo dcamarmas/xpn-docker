@@ -7,12 +7,10 @@ ARG GID
 ENV DEBIAN_FRONTEND=noninteractive
 
 # A) Install essential software
-COPY scripts/pkg-install/*.sh /tmp/
- RUN  chmod a+x /tmp/*.sh
- RUN  /tmp/essential-util.sh
- RUN  /tmp/essential-net.sh
- RUN  /tmp/essential-build.sh
- RUN  /tmp/essential-python.sh
+ RUN mkdir -p /tmp/pkg
+COPY install-pkg/*.sh /tmp/pkg
+ RUN chmod a+x /tmp/pkg/*.sh
+ RUN /tmp/pkg/run_all.sh
 
 # B) Setup lab user
 RUN getent group  "$GID" > /dev/null || addgroup --gid $GID lab
@@ -23,32 +21,29 @@ RUN getent passwd "$UID" > /dev/null && export UNAME=$(getent passwd "$UID" | cu
 RUN echo 'lab ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 RUN echo 'lab:lab' | sudo chpasswd
 
-# C) Install SSH (from package)
-USER root
-COPY scripts/pkg-install/*.sh /tmp/
- RUN  chmod a+x /tmp/*.sh
- RUN  /tmp/ssh.sh
- RUN  chown -R lab:lab /home/lab
+ADD lab-home             /tmp/home-lab/
+RUN mv /tmp/home-lab/*   /home/lab
+RUN chown -R lab:lab     /home/lab
+
+# C) OpenSSH: keygen
 USER lab
- RUN  /tmp/lab_init.sh
+ RUN mkdir -p  /home/lab/.ssh
+ RUN chmod 700 /home/lab/.ssh
+ RUN ssh-keygen -q -t rsa -N "" -f /home/lab/.ssh/id_rsa
+ RUN ssh-keygen -q -t dsa -N "" -f /home/lab/.ssh/id_dsa
+ RUN cat /home/lab/.ssh/id_dsa.pub >> /home/lab/.ssh/authorized_keys
+ RUN cat /home/lab/.ssh/id_rsa.pub >> /home/lab/.ssh/authorized_keys
 
 # D) Install MPICH and XPN (from source)
+USER root
+ RUN mkdir -p /tmp/src
+COPY install-src/*.sh /tmp/src
+ RUN chmod a+x /tmp/src/*.sh
 USER lab
-COPY scripts/src-install/*.sh /tmp/
- RUN  sudo chmod a+x /tmp/*.sh
- RUN  /tmp/mpich.sh   /home/lab/src/
- RUN  /tmp/spark.sh   /home/lab/src/
- RUN  /tmp/xpn.sh     /home/lab/src/
- RUN  /tmp/ior.sh     /home/lab/src/
+ RUN /tmp/src/run_all.sh /home/lab/src/
 
 # User initial home
 USER lab
-RUN mkdir -p  /home/lab/bin  /home/lab/test  /home/lab/replication  /home/lab/spark  /home/lab/benchmark
-ADD lab-home/bin          /home/lab/bin
-ADD lab-home/test         /home/lab/test
-ADD lab-home/spark        /home/lab/spark
-ADD lab-home/benchmark    /home/lab/benchmark
-ADD lab-home/replication  /home/lab/replication
 RUN sudo chmod a+x /home/lab/*/*.sh
 RUN sudo chown -R lab:lab /home/lab
 WORKDIR "/home/lab"
@@ -58,7 +53,6 @@ USER root
 RUN mkdir -p /work
 RUN mkdir -p /srv
 COPY docker/dockerstart.sh /srv/
-RUN  rm -fr /tmp/*.sh
 
 EXPOSE 22
 CMD ["/srv/dockerstart.sh"]
