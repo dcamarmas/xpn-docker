@@ -1,4 +1,4 @@
-# Expand Docker -- version 3.2
+# Expand Docker -- version 3.3
 
 
 ## Contents
@@ -14,7 +14,7 @@
 
 ## 1. Summary of using xpn-docker
 
-* Summary:
+
   <html>
   <table>
   <tr>
@@ -26,7 +26,7 @@
   <td rowspan="3">
   Container image
   </td>
-  <td colspan="1"> First time + when dockerfile is updated </td>
+  <td colspan="1"> build image <br> IF((First time OR dockerfile updated)) </td>
   <td><code>./xpn_docker.sh build</code>
   </td>
   </tr>
@@ -42,14 +42,19 @@
   </tr>
 
   <tr>
-  <td rowspan="2">
-  Options for multiple nodes
+  <td rowspan="3">
+  Multiple nodes
   </td>
   <td>  
   Starting docker swarm
   </td>
   <td>
   <code>./xpn-docker.sh swarm-create machinefile</code>
+  </td>
+  </tr>
+  <tr>
+  <td colspan="2">
+  [[ Work session ]]
   </td>
   </tr>
   <tr>
@@ -86,7 +91,7 @@
 
   <tr>
   <td rowspan="2">
-  Options for debugging
+  Get information
   </td>
   <td>  
   To check running containers
