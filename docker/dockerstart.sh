@@ -21,7 +21,16 @@
 #
 
 
+# Start remapping user_id:group_id
+echo "Trying to remap uid:gid..."
+if [ -z "${HOST_UID}" ]; then
+    usermod  -u $HOST_UID lab
+    groupmod -g $HOST_GID lab
+    chown -R $HOST_UID:$HOST_GID /home/lab
+fi
+
 # Start RPCbind
+echo "Starting rpcbind..."
 /usr/sbin/service rpcbind start
 status=$?
 if [ $status -ne 0 ]; then
@@ -29,6 +38,7 @@ if [ $status -ne 0 ]; then
 fi
 
 # Start NFS-server
+echo "Starting nfs-kernel-server..."
 mkdir -p /export/nfs/$(hostname -i)
 echo "/export/nfs/$(hostname -i) $(hostname -i)/28(rw,sync,no_root_squash,no_subtree_check)" > /etc/exports
 
@@ -39,9 +49,11 @@ if [ $status -ne 0 ]; then
 fi
 
 # Start SSHD
+echo "Starting sshd..."
 /usr/sbin/sshd -D
 status=$?
 if [ $status -ne 0 ]; then
      echo "Failed to start sshd: $status"
      exit $status
 fi
+

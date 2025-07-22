@@ -17,16 +17,19 @@ services:
         target: /shared
       - type: bind
         source: /tmp
-        target: /local_storage
+        target: /storage_local
       - type: bind
         source: /dev/shm
-        target: /shm_storage
+        target: /storage_shm
       - type: bind
         source: ..
-        target: /backend_storage
+        target: /storage_backend
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - backend
+    environment:
+      - HOST_UID=${HOST_UID}
+      - HOST_GID=${HOST_GID}
 
 networks:
   backend:
