@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # A) Install essential software
  RUN mkdir -p /tmp/pkg
-COPY scripts/pkg-install/*.sh /tmp/pkg
+COPY install-pkg/*.sh /tmp/pkg
  RUN chmod a+x /tmp/pkg/*.sh
  RUN /tmp/pkg/run_all.sh
 
@@ -37,7 +37,7 @@ USER lab
 # D) Install MPICH and XPN (from source)
 USER root
  RUN mkdir -p /tmp/src
-COPY scripts/src-install/*.sh /tmp/src
+COPY install-src/*.sh /tmp/src
  RUN chmod a+x /tmp/src/*.sh
 USER lab
  RUN /tmp/src/run_all.sh /home/lab/src/
