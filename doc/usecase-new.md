@@ -1,4 +1,4 @@
-# Expand Docker -- version 3.3
+# Expand Docker
 
 
 ## Contents
@@ -10,14 +10,27 @@
    * [3.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/usecase-benchmarks.md)
    * [3.3 Examples of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/usecase-spark.md)
  * [4. Multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/swarm.md)
+ * [Authors](https://github.com/xpn-arcos/xpn-docker/authors.md)
 
 
+### How to add a new use case
 
-## Authors
-* :technologist: Félix García-Carballeira
-* :technologist: Alejandro Calderón Mateos
-* :technologist: Diego Camarmas Alonso
-* :technologist: Dario Muñoz Muñoz
-* :technologist: Elias del Pozo Puñal
+  1. Add the software to install for the new use case into the ```install-src``` directory/folder:
 
+      ```bash
+      cp install.sh install-src/100-new.sh
+      ```
+
+  2. Add the scripts to use the new use case to the ```lab-home``` directory/folder:
+
+      ```bash
+      mkdir -p lab-home/new
+      cp -a execute*.sh lab-home/new/
+      ```
+
+  3. Build the image with the new added usecase:
+
+      ```bash
+      ./xpn_docker.sh clean-build
+      ```
 

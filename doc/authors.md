@@ -1,4 +1,4 @@
-# Expand Docker -- version 3.3
+# Expand Docker
 
 
 ## Contents
@@ -10,7 +10,7 @@
    * [3.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/usecase-benchmarks.md)
    * [3.3 Examples of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/usecase-spark.md)
  * [4. Multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/swarm.md)
-
+ * [Authors](https://github.com/xpn-arcos/xpn-docker/authors.md)
 
 
 ## Authors
