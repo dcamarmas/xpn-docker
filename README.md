@@ -1,22 +1,22 @@
 # xpn-docker: Expand Docker
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![Release](https://img.shields.io/badge/Stable-2.3.6-green.svg)](https://github.com/acaldero/wepsim/releases/tag/v3.3)
+[![Release](https://img.shields.io/badge/Stable-3.3-green.svg)](https://github.com/xpn-arcos/xpn-docker/releases/tag/v3.3)
 
 
 ## Contents
 
- * [1. Summary of using xpn-docker](https://github.com/xpn-arcos/xpn-docker/#1-summary-of-using-xpn-docker)
- * [2. Build the container image](https://github.com/xpn-arcos/xpn-docker/#2-build-the-container-image)
- * [3. Some xpn-docker use cases](https://github.com/xpn-arcos/xpn-docker/#3-some-xpn-docker-use-cases)
-   * [3.1 Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#31-examples-using-xpn-ad-hoc)
-   * [3.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/#32-examples-of-benchmarks-with-xpn-ad-hoc)
-   * [3.3 Example  of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/#33-example-of-ad-hoc-xpn-with-apache-spark)
- * [4. Multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/#4-multiple-containers-on-multiple-nodes)
+ 1. [Summary of using xpn-docker](/docs/summary.md)
+ 2. [Build the container image](/docs/image.md)
+ 3. Some xpn-docker use cases:
+    1. [Examples using XPN Ad-Hoc](/docs/usecase-xpn.md)
+    2. [Examples of benchmarks with XPN Ad-Hoc](/docs/usecase-benchmarks.md)
+    3. [Example  of Apache Spark and Ad-Hoc XPN](/docs/usecase-spark.md)
+ 4. [Multiple containers on multiple nodes](/docs/swarm.md)
+ 5. [Authors](/docs/authors.md)
 
 
 ## 1. Summary xpn-docker options
-
 
   <html>
   <table>
