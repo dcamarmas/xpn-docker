@@ -3,17 +3,17 @@
 
 ## Contents
 
- * [1. Summary of using xpn-docker](https://github.com/xpn-arcos/xpn-docker/doc/summary.md)
- * [2. Build the container image](https://github.com/xpn-arcos/xpn-docker/doc/image.md)
+ * [1. Summary of using xpn-docker](/doc/summary.md)
+ * [2. Build the container image](/doc/image.md)
  * 3. Some xpn-docker use cases:
-   * [3.1 Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/doc/usecase-xpn.md)
-   * [3.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/usecase-benchmarks.md)
-   * [3.3 Examples of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/usecase-spark.md)
- * [4. Multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/swarm.md)
- * [Authors](https://github.com/xpn-arcos/xpn-docker/authors.md)
+   * [3.1 Examples using XPN Ad-Hoc](/doc/usecase-xpn.md)
+   * [3.2 Examples of benchmarks with XPN Ad-Hoc](/doc/usecase-benchmarks.md)
+   * [3.3 Examples of Apache Spark and Ad-Hoc XPN](/doc/usecase-spark.md)
+ * [4. Multiple containers on multiple nodes](/doc/swarm.md)
+ * [Authors](/doc/authors.md)
 
 
-### Example of using Expand with native API, with LD_PRELOAD (bypass), and with FUSE
+## Example of using Expand with native API, with LD_PRELOAD (bypass), and with FUSE
 
    <br>
    <html>
@@ -102,56 +102,5 @@
       * Execute example with Expand native access or access by using FUSE or by using LD_PRELOAD
       * Exit from container 1
    4. Stopping all containers
-
-
-## Examples using XPN Ad-Hoc
-
-  * Expand (fuse)
-
-      ```bash
-      : 1. To start 3 containers
-      ./xpn_docker.sh start 3
-      ./xpn_docker.sh status
-
-      : 2. Work from container 1
-      ./xpn_docker.sh bash 1
-      ./test/xpn-mpi-fuse.sh
-      exit
-
-      : 3. Stop all containers
-      ./xpn_docker.sh stop
-      ```
-
-  * Expand (bypass)
-
-      ```bash
-      : 1. To start 3 containers
-      ./xpn_docker.sh start 3
-      ./xpn_docker.sh status
-
-      : 2. Work from container 1
-      ./xpn_docker.sh bash 1
-      ./test/xpn-mpi-bypass.sh
-      exit
-
-      : 3. Stop all containers
-      ./xpn_docker.sh stop
-      ```
-
-  * Expand (native)
-
-      ```bash
-      : 1. To start 3 containers
-      ./xpn_docker.sh start 3
-      ./xpn_docker.sh status
-
-      : 2. Work from container 1
-      ./xpn_docker.sh bash 1
-      ./test/xpn-mpi-native.sh
-      exit
-
-      : 3. Stop all containers
-      ./xpn_docker.sh stop
-      ```
 
 

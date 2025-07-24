@@ -3,17 +3,17 @@
 
 ## Contents
 
- * [1. Summary of using xpn-docker](https://github.com/xpn-arcos/xpn-docker/doc/summary.md)
- * [2. Build the container image](https://github.com/xpn-arcos/xpn-docker/doc/image.md)
+ * [1. Summary of using xpn-docker](/doc/summary.md)
+ * [2. Build the container image](/doc/image.md)
  * 3. Some xpn-docker use cases:
-   * [3.1 Examples using XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/doc/usecase-xpn.md)
-   * [3.2 Examples of benchmarks with XPN Ad-Hoc](https://github.com/xpn-arcos/xpn-docker/usecase-benchmarks.md)
-   * [3.3 Examples of Apache Spark and Ad-Hoc XPN](https://github.com/xpn-arcos/xpn-docker/usecase-spark.md)
- * [4. Multiple containers on multiple nodes](https://github.com/xpn-arcos/xpn-docker/swarm.md)
- * [Authors](https://github.com/xpn-arcos/xpn-docker/authors.md)
+   * [3.1 Examples using XPN Ad-Hoc](/doc/usecase-xpn.md)
+   * [3.2 Examples of benchmarks with XPN Ad-Hoc](/doc/usecase-benchmarks.md)
+   * [3.3 Examples of Apache Spark and Ad-Hoc XPN](/doc/usecase-spark.md)
+ * [4. Multiple containers on multiple nodes](/doc/swarm.md)
+ * [Authors](/doc/authors.md)
 
 
-### How to add a new use case
+## How to add a new use case
 
   1. Add the software to install for the new use case into the ```install-src``` directory/folder:
 
